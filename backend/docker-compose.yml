@@ -1,0 +1,28 @@
+version: '3.8'
+services:
+  gateway:
+    build: ./services/gateway
+    ports:
+      - "3000:3000"
+  auth-service:
+    build: ./services/auth-service
+    ports:
+      - "3001:3001"
+    environment:
+      - MONGO_ENABLED=true
+      - MONGO_URI=mongodb://auth-db:27017/auth-db
+    depends_on:
+      - auth-db
+  auth-db:
+    image: mongo:6.0
+    restart: always
+    volumes:
+      - auth-db-data:/data/db
+    # No host port mapping to avoid conflicts; services use the Docker network
+  quiz-service:
+    build: ./services/quiz-service
+    ports:
+      - "3002:3002"
+
+volumes:
+  auth-db-data:

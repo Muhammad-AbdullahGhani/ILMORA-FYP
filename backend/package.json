@@ -1,0 +1,1 @@
+{ "name": "backend-monorepo", "private": true, "workspaces": ["services/*"] }

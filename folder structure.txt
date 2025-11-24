@@ -1,0 +1,125 @@
+ilm-ora/
+├── frontend/                              # 🎨 Frontend Monorepo
+│   ├── src/
+│   │   ├── app/                           # Global App setup
+│   │   ├── microservices/                 # Each microservice has 4 layers
+│   │   │   ├── quiz/
+│   │   │   ├── recommendation/
+│   │   │   ├── sentiment/
+│   │   │   ├── auth/
+│   │   │   ├── university/
+│   │   │   ├── career/
+│   │   │   ├── scholarships/
+│   │   │   ├── hostels/
+│   │   │   └── admin/
+│   │   ├── shared/
+│   │   └── config/
+│   ├── public/
+│   └── package.json
+│
+├── backend/                               # ⚙️ Backend Monorepo
+│   ├── services/                          # Each service = independent backend microservice
+│   │   ├── auth-service/
+│   │   │   ├── src/
+│   │   │   │   ├── controllers/
+│   │   │   │   │   ├── authController.ts
+│   │   │   │   ├── routes/
+│   │   │   │   │   ├── authRoutes.ts
+│   │   │   │   ├── services/
+│   │   │   │   │   ├── authService.ts
+│   │   │   │   ├── models/
+│   │   │   │   │   ├── User.ts
+│   │   │   │   ├── utils/
+│   │   │   │   │   ├── tokenManager.ts
+│   │   │   │   └── index.ts
+│   │   │   ├── tests/
+│   │   │   ├── Dockerfile
+│   │   │   ├── package.json
+│   │   │   └── tsconfig.json
+│   │   │
+│   │   ├── quiz-service/
+│   │   │   ├── src/
+│   │   │   │   ├── controllers/quizController.ts
+│   │   │   │   ├── routes/quizRoutes.ts
+│   │   │   │   ├── services/quizLogic.ts
+│   │   │   │   ├── models/Question.ts
+│   │   │   │   ├── models/QuizResult.ts
+│   │   │   │   └── index.ts
+│   │   │   ├── Dockerfile
+│   │   │   └── package.json
+│   │   │
+│   │   ├── recommendation-service/
+│   │   │   ├── src/
+│   │   │   │   ├── controllers/recommendationController.ts
+│   │   │   │   ├── services/recommendationEngine.ts
+│   │   │   │   ├── routes/recommendationRoutes.ts
+│   │   │   │   ├── models/Recommendation.ts
+│   │   │   │   └── index.ts
+│   │   │   ├── Dockerfile
+│   │   │   └── package.json
+│   │   │
+│   │   ├── sentiment-service/
+│   │   │   ├── src/
+│   │   │   │   ├── controllers/sentimentController.ts
+│   │   │   │   ├── services/sentimentAnalyzer.ts
+│   │   │   │   ├── routes/sentimentRoutes.ts
+│   │   │   │   └── models/SurveyResponse.ts
+│   │   │   └── Dockerfile
+│   │   │
+│   │   ├── university-service/
+│   │   │   ├── src/
+│   │   │   │   ├── controllers/universityController.ts
+│   │   │   │   ├── models/University.ts
+│   │   │   │   ├── routes/universityRoutes.ts
+│   │   │   │   └── services/universityService.ts
+│   │   │   └── Dockerfile
+│   │   │
+│   │   ├── career-service/
+│   │   │   ├── src/
+│   │   │   │   ├── controllers/careerController.ts
+│   │   │   │   ├── services/careerService.ts
+│   │   │   │   └── models/Career.ts
+│   │   │   └── Dockerfile
+│   │   │
+│   │   ├── admin-service/
+│   │   │   ├── src/
+│   │   │   │   ├── controllers/adminController.ts
+│   │   │   │   ├── services/dataPreprocessor.ts
+│   │   │   │   └── routes/adminRoutes.ts
+│   │   │   └── Dockerfile
+│   │   │
+│   │   └── gateway/                    # 🌉 API Gateway / BFF
+│   │       ├── src/
+│   │       │   ├── index.ts
+│   │       │   ├── middleware/
+│   │       │   │   └── authMiddleware.ts
+│   │       │   ├── routes/
+│   │       │   │   ├── proxyRoutes.ts
+│   │       │   └── utils/
+│   │       │       └── rateLimiter.ts
+│   │       ├── Dockerfile
+│   │       └── package.json
+│   │
+│   ├── shared/
+│   │   ├── db/
+│   │   │   ├── connectMongo.ts
+│   │   │   └── connectPostgres.ts
+│   │   ├── utils/
+│   │   │   ├── logger.ts
+│   │   │   └── errorHandler.ts
+│   │   └── constants/
+│   │       └── env.ts
+│   │
+│   ├── docker-compose.yml               # Spins up all services + DBs
+│   ├── package.json
+│   └── tsconfig.json
+│
+├── docs/
+│   ├── diagrams/
+│   │   ├── class-diagram.mmd
+│   │   ├── architecture.mmd
+│   │   └── deployment.mmd
+│   ├── API_DOCS.md
+│   └── README.md
+│
+└── README.md
