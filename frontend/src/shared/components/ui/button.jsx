@@ -1,4 +1,3 @@
-function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva } from "class-variance-authority";
@@ -33,13 +32,12 @@ function Button({
   ...props
 }) {
   const Comp = asChild ? Slot : "button";
-  return /*#__PURE__*/React.createElement(Comp, _extends({
-    "data-slot": "button",
-    className: cn(buttonVariants({
-      variant,
-      size,
-      className
-    }))
-  }, props));
+  return (
+    <Comp
+      data-slot="button"
+      className={cn(buttonVariants({ variant, size, className }))}
+      {...props}
+    />
+  );
 }
 export { Button, buttonVariants };

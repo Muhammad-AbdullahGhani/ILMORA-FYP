@@ -22,13 +22,17 @@ export function ThemeProvider({
   const setTheme = newTheme => {
     setThemeState(newTheme);
   };
-  return /*#__PURE__*/React.createElement(ThemeContext.Provider, {
-    value: {
-      theme,
-      toggleTheme,
-      setTheme
-    }
-  }, children);
+  return (
+    <ThemeContext.Provider
+      value={{
+        theme,
+        toggleTheme,
+        setTheme
+      }}
+    >
+      {children}
+    </ThemeContext.Provider>
+  );
 }
 export function useTheme() {
   const context = useContext(ThemeContext);

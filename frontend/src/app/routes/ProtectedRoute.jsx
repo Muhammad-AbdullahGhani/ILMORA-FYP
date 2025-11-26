@@ -10,21 +10,17 @@ export function ProtectedRoute({
     loading
   } = useAuth();
   if (loading) {
-    return /*#__PURE__*/React.createElement("div", {
-      className: "min-h-screen flex items-center justify-center"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "text-center"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"
-    }), /*#__PURE__*/React.createElement("p", {
-      className: "text-muted-foreground"
-    }, "Loading...")));
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
   }
   if (!isAuthenticated) {
-    return /*#__PURE__*/React.createElement(Navigate, {
-      to: "/auth",
-      replace: true
-    });
+    return <Navigate to="/auth" replace={true} />;
   }
-  return /*#__PURE__*/React.createElement(React.Fragment, null, children);
+  return <>{children}</>;
 }

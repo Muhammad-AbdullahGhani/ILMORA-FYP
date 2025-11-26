@@ -62,24 +62,31 @@ function Carousel({
       api?.off("select", onSelect);
     };
   }, [api, onSelect]);
-  return /*#__PURE__*/React.createElement(CarouselContext.Provider, {
-    value: {
-      carouselRef,
-      api: api,
-      opts,
-      orientation: orientation || (opts?.axis === "y" ? "vertical" : "horizontal"),
-      scrollPrev,
-      scrollNext,
-      canScrollPrev,
-      canScrollNext
-    }
-  }, /*#__PURE__*/React.createElement("div", _extends({
-    onKeyDownCapture: handleKeyDown,
-    className: cn("relative", className),
-    role: "region",
-    "aria-roledescription": "carousel",
-    "data-slot": "carousel"
-  }, props), children));
+  return (
+    <CarouselContext.Provider
+      value={{
+        carouselRef,
+        api: api,
+        opts,
+        orientation: orientation || (opts?.axis === "y" ? "vertical" : "horizontal"),
+        scrollPrev,
+        scrollNext,
+        canScrollPrev,
+        canScrollNext
+      }}
+    >
+      <div
+        onKeyDownCapture={handleKeyDown}
+        className={cn("relative", className)}
+        role="region"
+        aria-roledescription="carousel"
+        data-slot="carousel"
+        {...props}
+      >
+        {children}
+      </div>
+    </CarouselContext.Provider>
+  );
 }
 function CarouselContent({
   className,
@@ -89,13 +96,11 @@ function CarouselContent({
     carouselRef,
     orientation
   } = useCarousel();
-  return /*#__PURE__*/React.createElement("div", {
-    ref: carouselRef,
-    className: "overflow-hidden",
-    "data-slot": "carousel-content"
-  }, /*#__PURE__*/React.createElement("div", _extends({
-    className: cn("flex", orientation === "horizontal" ? "-ml-4" : "-mt-4 flex-col", className)
-  }, props)));
+  return (
+    <div ref={carouselRef} className="overflow-hidden" data-slot="carousel-content">
+      <div className={cn("flex", orientation === "horizontal" ? "-ml-4" : "-mt-4 flex-col", className)} {...props} />
+    </div>
+  );
 }
 function CarouselItem({
   className,
@@ -104,12 +109,15 @@ function CarouselItem({
   const {
     orientation
   } = useCarousel();
-  return /*#__PURE__*/React.createElement("div", _extends({
-    role: "group",
-    "aria-roledescription": "slide",
-    "data-slot": "carousel-item",
-    className: cn("min-w-0 shrink-0 grow-0 basis-full", orientation === "horizontal" ? "pl-4" : "pt-4", className)
-  }, props));
+  return (
+    <div
+      role="group"
+      aria-roledescription="slide"
+      data-slot="carousel-item"
+      className={cn("min-w-0 shrink-0 grow-0 basis-full", orientation === "horizontal" ? "pl-4" : "pt-4", className)}
+      {...props}
+    />
+  );
 }
 function CarouselPrevious({
   className,
@@ -122,16 +130,20 @@ function CarouselPrevious({
     scrollPrev,
     canScrollPrev
   } = useCarousel();
-  return /*#__PURE__*/React.createElement(Button, _extends({
-    "data-slot": "carousel-previous",
-    variant: variant,
-    size: size,
-    className: cn("absolute size-8 rounded-full", orientation === "horizontal" ? "top-1/2 -left-12 -translate-y-1/2" : "-top-12 left-1/2 -translate-x-1/2 rotate-90", className),
-    disabled: !canScrollPrev,
-    onClick: scrollPrev
-  }, props), /*#__PURE__*/React.createElement(ArrowLeft, null), /*#__PURE__*/React.createElement("span", {
-    className: "sr-only"
-  }, "Previous slide"));
+  return (
+    <Button
+      data-slot="carousel-previous"
+      variant={variant}
+      size={size}
+      className={cn("absolute size-8 rounded-full", orientation === "horizontal" ? "top-1/2 -left-12 -translate-y-1/2" : "-top-12 left-1/2 -translate-x-1/2 rotate-90", className)}
+      disabled={!canScrollPrev}
+      onClick={scrollPrev}
+      {...props}
+    >
+      <ArrowLeft />
+      <span className="sr-only">Previous slide</span>
+    </Button>
+  );
 }
 function CarouselNext({
   className,
@@ -144,15 +156,19 @@ function CarouselNext({
     scrollNext,
     canScrollNext
   } = useCarousel();
-  return /*#__PURE__*/React.createElement(Button, _extends({
-    "data-slot": "carousel-next",
-    variant: variant,
-    size: size,
-    className: cn("absolute size-8 rounded-full", orientation === "horizontal" ? "top-1/2 -right-12 -translate-y-1/2" : "-bottom-12 left-1/2 -translate-x-1/2 rotate-90", className),
-    disabled: !canScrollNext,
-    onClick: scrollNext
-  }, props), /*#__PURE__*/React.createElement(ArrowRight, null), /*#__PURE__*/React.createElement("span", {
-    className: "sr-only"
-  }, "Next slide"));
+  return (
+    <Button
+      data-slot="carousel-next"
+      variant={variant}
+      size={size}
+      className={cn("absolute size-8 rounded-full", orientation === "horizontal" ? "top-1/2 -right-12 -translate-y-1/2" : "-bottom-12 left-1/2 -translate-x-1/2 rotate-90", className)}
+      disabled={!canScrollNext}
+      onClick={scrollNext}
+      {...props}
+    >
+      <ArrowRight />
+      <span className="sr-only">Next slide</span>
+    </Button>
+  );
 }
 export { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext };

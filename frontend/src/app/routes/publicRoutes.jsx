@@ -19,53 +19,53 @@ import { SettingsPage } from "@/presentation/pages/Settings/SettingsPage";
 import { AdminDashboard } from "@/microservices/admin/presentation/pages/AdminDashboard";
 export const publicRoutes = [{
   path: "/",
-  element: /*#__PURE__*/React.createElement(LandingPage, null)
+  element: <LandingPage />
 }, {
   path: "/auth",
-  element: /*#__PURE__*/React.createElement(AuthPage, null)
+  element: <AuthPage />
 }, {
   path: "/about",
-  element: /*#__PURE__*/React.createElement(AboutPage, null)
+  element: <AboutPage />
 }, {
   path: "/dashboard",
-  element: /*#__PURE__*/React.createElement(Dashboard, null)
+  element: <Dashboard />
 }, {
   path: "/quiz-intro",
-  element: /*#__PURE__*/React.createElement(QuizIntro, null)
+  element: <QuizIntro />
 }, {
   path: "/quiz",
-  element: /*#__PURE__*/React.createElement(QuizQuestions, null)
+  element: <QuizQuestions />
 }, {
   path: "/quiz-results",
-  element: /*#__PURE__*/React.createElement(QuizResults, null)
+  element: <QuizResults />
 }, {
   path: "/degrees",
-  element: /*#__PURE__*/React.createElement(DegreeRecommendations, null)
+  element: <DegreeRecommendations />
 }, {
   path: "/universities",
-  element: /*#__PURE__*/React.createElement(UniversityRecommendations, null)
+  element: <UniversityRecommendations />
 }, {
   path: "/university/:id",
-  element: /*#__PURE__*/React.createElement(UniversityDetail, null)
+  element: <UniversityDetail />
 }, {
   path: "/careers",
-  element: /*#__PURE__*/React.createElement(CareerInsights, null)
+  element: <CareerInsights />
 }, {
   path: "/sentiments",
-  element: /*#__PURE__*/React.createElement(SentimentDashboard, null)
+  element: <SentimentDashboard />
 }, {
   path: "/scholarships",
-  element: /*#__PURE__*/React.createElement(ScholarshipFinder, null)
+  element: <ScholarshipFinder />
 }, {
   path: "/hostels",
-  element: /*#__PURE__*/React.createElement(HostelFinder, null)
+  element: <HostelFinder />
 }, {
   path: "/feedback",
-  element: /*#__PURE__*/React.createElement(FeedbackPage, null)
+  element: <FeedbackPage />
 }, {
   path: "/settings",
-  element: /*#__PURE__*/React.createElement(SettingsPage, null)
+  element: <SettingsPage />
 }, {
   path: "/admin",
-  element: /*#__PURE__*/React.createElement(AdminDashboard, null)
+  element: <AdminDashboard />
 }];

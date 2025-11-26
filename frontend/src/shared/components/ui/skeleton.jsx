@@ -5,9 +5,6 @@ function Skeleton({
   className,
   ...props
 }) {
-  return /*#__PURE__*/React.createElement("div", _extends({
-    "data-slot": "skeleton",
-    className: cn("bg-accent animate-pulse rounded-md", className)
-  }, props));
+  return <div data-slot="skeleton" className={cn("bg-accent animate-pulse rounded-md", className)} {...props} />;
 }
 export { Skeleton };

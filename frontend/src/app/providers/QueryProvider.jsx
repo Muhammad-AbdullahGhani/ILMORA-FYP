@@ -12,7 +12,9 @@ const queryClient = new QueryClient({
 export function QueryProvider({
   children
 }) {
-  return /*#__PURE__*/React.createElement(QueryClientProvider, {
-    client: queryClient
-  }, children);
+  return (
+    <QueryClientProvider client={queryClient}>
+      {children}
+    </QueryClientProvider>
+  );
 }

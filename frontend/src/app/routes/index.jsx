@@ -5,19 +5,17 @@ import { ProtectedRoute } from "./ProtectedRoute";
 import { publicRoutes } from "./publicRoutes";
 import { protectedRoutes } from "./protectedRoutes";
 export function AppRoutes() {
-  return /*#__PURE__*/React.createElement(Routes, null, publicRoutes.map(route => /*#__PURE__*/React.createElement(Route, {
-    key: route.path,
-    path: route.path,
-    element: route.element
-  })), protectedRoutes.map(route => /*#__PURE__*/React.createElement(Route, {
-    key: route.path,
-    path: route.path,
-    element: /*#__PURE__*/React.createElement(ProtectedRoute, null, route.element)
-  })), /*#__PURE__*/React.createElement(Route, {
-    path: "*",
-    element: /*#__PURE__*/React.createElement(Navigate, {
-      to: "/",
-      replace: true
-    })
-  }));
+  return (
+    <Routes>
+      {publicRoutes.map(route => (
+        <Route key={route.path} path={route.path} element={route.element} />
+      ))}
+
+      {protectedRoutes.map(route => (
+        <Route key={route.path} path={route.path} element={<ProtectedRoute>{route.element}</ProtectedRoute>} />
+      ))}
+
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
 }

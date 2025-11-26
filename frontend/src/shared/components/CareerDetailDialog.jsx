@@ -29,103 +29,106 @@ export function CareerDetailDialog({
     years: "10+ years",
     salary: "150% increase"
   }];
-  return /*#__PURE__*/React.createElement(Dialog, {
-    open: open,
-    onOpenChange: onOpenChange
-  }, /*#__PURE__*/React.createElement(DialogContent, {
-    className: "max-w-3xl max-h-[90vh] overflow-y-auto"
-  }, /*#__PURE__*/React.createElement(DialogHeader, null, /*#__PURE__*/React.createElement(DialogTitle, {
-    className: "text-2xl"
-  }, career.title), /*#__PURE__*/React.createElement(DialogDescription, null, "Complete career path and requirements")), /*#__PURE__*/React.createElement("div", {
-    className: "space-y-6"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "grid sm:grid-cols-2 gap-4"
-  }, /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement(CardContent, {
-    className: "p-4"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-3"
-  }, /*#__PURE__*/React.createElement(DollarSign, {
-    className: "w-8 h-8 text-green-600"
-  }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    className: "text-sm text-muted-foreground"
-  }, "Pakistan Salary"), /*#__PURE__*/React.createElement("div", {
-    className: "font-bold"
-  }, career.avgSalary), career.globalSalary && /*#__PURE__*/React.createElement("div", {
-    className: "text-xs text-muted-foreground"
-  }, "Global: ", career.globalSalary))))), /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement(CardContent, {
-    className: "p-4"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-3"
-  }, /*#__PURE__*/React.createElement(TrendingUp, {
-    className: "w-8 h-8 text-secondary"
-  }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    className: "text-sm text-muted-foreground"
-  }, "Market Growth"), /*#__PURE__*/React.createElement("div", {
-    className: "font-bold text-green-600"
-  }, career.growth), /*#__PURE__*/React.createElement(Badge, {
-    className: career.demand === "Very High" ? "bg-green-600" : "bg-blue-600"
-  }, career.demand, " Demand")))))), /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement(CardContent, {
-    className: "p-4"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-2 mb-2"
-  }, /*#__PURE__*/React.createElement(MapPin, {
-    className: "w-5 h-5 text-primary"
-  }), /*#__PURE__*/React.createElement("h3", {
-    className: "font-semibold"
-  }, "Where You Can Work")), /*#__PURE__*/React.createElement("p", {
-    className: "text-muted-foreground"
-  }, career.location))), /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement(CardContent, {
-    className: "p-4"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-2 mb-3"
-  }, /*#__PURE__*/React.createElement(Target, {
-    className: "w-5 h-5 text-primary"
-  }), /*#__PURE__*/React.createElement("h3", {
-    className: "font-semibold"
-  }, "Key Skills Required")), /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-wrap gap-2"
-  }, career.skills.map((skill, i) => /*#__PURE__*/React.createElement(Badge, {
-    key: i,
-    variant: "outline",
-    className: "bg-card"
-  }, skill))))), /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement(CardContent, {
-    className: "p-4"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-2 mb-4"
-  }, /*#__PURE__*/React.createElement(Briefcase, {
-    className: "w-5 h-5 text-primary"
-  }), /*#__PURE__*/React.createElement("h3", {
-    className: "font-semibold"
-  }, "Career Progression Path")), /*#__PURE__*/React.createElement("div", {
-    className: "space-y-3"
-  }, careerPath.map((level, i) => /*#__PURE__*/React.createElement("div", {
-    key: i,
-    className: "flex items-start gap-3 p-3 bg-muted/30 rounded-lg"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold flex-shrink-0"
-  }, i + 1), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    className: "font-semibold"
-  }, level.title), /*#__PURE__*/React.createElement("div", {
-    className: "text-sm text-muted-foreground"
-  }, level.years), /*#__PURE__*/React.createElement("div", {
-    className: "text-sm text-green-600"
-  }, level.salary))))))), /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement(CardContent, {
-    className: "p-4"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-2 mb-3"
-  }, /*#__PURE__*/React.createElement(GraduationCap, {
-    className: "w-5 h-5 text-primary"
-  }), /*#__PURE__*/React.createElement("h3", {
-    className: "font-semibold"
-  }, "Recommended Degrees")), /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-wrap gap-2"
-  }, relatedDegrees.map((degree, i) => /*#__PURE__*/React.createElement(Badge, {
-    key: i,
-    variant: "outline",
-    className: "bg-primary/5"
-  }, degree))), /*#__PURE__*/React.createElement(Link, {
-    to: "/degrees"
-  }, /*#__PURE__*/React.createElement(Button, {
-    className: "w-full mt-4 bg-primary"
-  }, "View Degree Programs")))))));
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-2xl">{career.title}</DialogTitle>
+          <DialogDescription>Complete career path and requirements</DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-6">
+          <div className="grid sm:grid-cols-2 gap-4">
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <DollarSign className="w-8 h-8 text-green-600" />
+                  <div>
+                    <div className="text-sm text-muted-foreground">Pakistan Salary</div>
+                    <div className="font-bold">{career.avgSalary}</div>
+                    {career.globalSalary && <div className="text-xs text-muted-foreground">Global: {career.globalSalary}</div>}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <TrendingUp className="w-8 h-8 text-secondary" />
+                  <div>
+                    <div className="text-sm text-muted-foreground">Market Growth</div>
+                    <div className="font-bold text-green-600">{career.growth}</div>
+                    <Badge className={career.demand === "Very High" ? "bg-green-600" : "bg-blue-600"}>{career.demand} Demand</Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <MapPin className="w-5 h-5 text-primary" />
+                <h3 className="font-semibold">Where You Can Work</h3>
+              </div>
+              <p className="text-muted-foreground">{career.location}</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Target className="w-5 h-5 text-primary" />
+                <h3 className="font-semibold">Key Skills Required</h3>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {career.skills.map((skill, i) => (
+                  <Badge key={i} variant="outline" className="bg-card">{skill}</Badge>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-4">
+                <Briefcase className="w-5 h-5 text-primary" />
+                <h3 className="font-semibold">Career Progression Path</h3>
+              </div>
+              <div className="space-y-3">
+                {careerPath.map((level, i) => (
+                  <div key={i} className="flex items-start gap-3 p-3 bg-muted/30 rounded-lg">
+                    <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold flex-shrink-0">{i + 1}</div>
+                    <div>
+                      <div className="font-semibold">{level.title}</div>
+                      <div className="text-sm text-muted-foreground">{level.years}</div>
+                      <div className="text-sm text-green-600">{level.salary}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <GraduationCap className="w-5 h-5 text-primary" />
+                <h3 className="font-semibold">Recommended Degrees</h3>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {relatedDegrees.map((degree, i) => (
+                  <Badge key={i} variant="outline" className="bg-primary/5">{degree}</Badge>
+                ))}
+              </div>
+              <Link to="/degrees">
+                <Button className="w-full mt-4 bg-primary">View Degree Programs</Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
 }

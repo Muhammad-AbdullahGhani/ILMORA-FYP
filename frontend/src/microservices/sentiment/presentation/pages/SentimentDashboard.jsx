@@ -30,143 +30,109 @@ export function SentimentDashboard() {
   const universityComparison = [{
     name: "MIT",
     overall: 4.8
-  }, {
-    name: "Stanford",
-    overall: 4.7
-  }, {
-    name: "Harvard",
-    overall: 4.6
-  }, {
-    name: "Berkeley",
-    overall: 4.4
-  }, {
-    name: "CMU",
-    overall: 4.5
-  }];
-  return /*#__PURE__*/React.createElement("div", {
-    className: "min-h-screen bg-muted/30 p-2 sm:p-4 md:p-8"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "max-w-7xl mx-auto"
-  }, /*#__PURE__*/React.createElement(Button, {
-    variant: "ghost",
-    onClick: () => window.history.back(),
-    className: "mb-4"
-  }, /*#__PURE__*/React.createElement(ArrowLeft, {
-    className: "w-4 h-4 mr-2"
-  }), "Back"), /*#__PURE__*/React.createElement("div", {
-    className: "mb-6 md:mb-8"
-  }, /*#__PURE__*/React.createElement("h1", {
-    className: "text-2xl sm:text-3xl md:text-4xl font-bold mb-4"
-  }, "Sentiment Analytics"), /*#__PURE__*/React.createElement("p", {
-    className: "text-sm sm:text-base text-muted-foreground"
-  }, "Student and alumni feedback from Pakistani universities")), /*#__PURE__*/React.createElement(Card, {
-    className: "mb-8"
-  }, /*#__PURE__*/React.createElement(CardContent, {
-    className: "p-6"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-wrap gap-4"
-  }, /*#__PURE__*/React.createElement(Select, {
-    defaultValue: "all"
-  }, /*#__PURE__*/React.createElement(SelectTrigger, {
-    className: "w-48"
-  }, /*#__PURE__*/React.createElement(SelectValue, {
-    placeholder: "Field"
-  })), /*#__PURE__*/React.createElement(SelectContent, null, /*#__PURE__*/React.createElement(SelectItem, {
-    value: "all"
-  }, "All Fields"), /*#__PURE__*/React.createElement(SelectItem, {
-    value: "tech"
-  }, "Technology"), /*#__PURE__*/React.createElement(SelectItem, {
-    value: "eng"
-  }, "Engineering"))), /*#__PURE__*/React.createElement(Select, {
-    defaultValue: "all"
-  }, /*#__PURE__*/React.createElement(SelectTrigger, {
-    className: "w-48"
-  }, /*#__PURE__*/React.createElement(SelectValue, {
-    placeholder: "City"
-  })), /*#__PURE__*/React.createElement(SelectContent, null, /*#__PURE__*/React.createElement(SelectItem, {
-    value: "all"
-  }, "All Cities"), /*#__PURE__*/React.createElement(SelectItem, {
-    value: "cambridge"
-  }, "Cambridge"), /*#__PURE__*/React.createElement(SelectItem, {
-    value: "stanford"
-  }, "Stanford")))))), /*#__PURE__*/React.createElement("div", {
-    className: "grid lg:grid-cols-2 gap-8 mb-8"
-  }, /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement(CardHeader, null, /*#__PURE__*/React.createElement(CardTitle, null, "Sentiment Categories"), /*#__PURE__*/React.createElement(CardDescription, null, "Average ratings across dimensions")), /*#__PURE__*/React.createElement(CardContent, null, /*#__PURE__*/React.createElement(ResponsiveContainer, {
-    width: "100%",
-    height: 300
-  }, /*#__PURE__*/React.createElement(BarChart, {
-    data: sentimentData
-  }, /*#__PURE__*/React.createElement(CartesianGrid, {
-    strokeDasharray: "3 3",
-    stroke: "hsl(var(--border))",
-    strokeWidth: 1.5
-  }), /*#__PURE__*/React.createElement(XAxis, {
-    dataKey: "category",
-    tick: {
-      fill: "hsl(var(--foreground))",
-      fontWeight: 600
-    }
-  }), /*#__PURE__*/React.createElement(YAxis, {
-    domain: [0, 5],
-    tick: {
-      fill: "hsl(var(--foreground))",
-      fontWeight: 600
-    }
-  }), /*#__PURE__*/React.createElement(Tooltip, {
-    contentStyle: {
-      backgroundColor: "hsl(var(--card))",
-      border: "2px solid #1976D2",
-      borderRadius: "12px",
-      fontWeight: 600
-    }
-  }), /*#__PURE__*/React.createElement(Bar, {
-    dataKey: "score",
-    radius: [8, 8, 0, 0]
-  }, sentimentData.map((entry, index) => /*#__PURE__*/React.createElement(Cell, {
-    key: `cell-${index}`,
-    fill: entry.color
-  }))))))), /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement(CardHeader, null, /*#__PURE__*/React.createElement(CardTitle, null, "University Comparison"), /*#__PURE__*/React.createElement(CardDescription, null, "Overall sentiment scores")), /*#__PURE__*/React.createElement(CardContent, null, /*#__PURE__*/React.createElement(ResponsiveContainer, {
-    width: "100%",
-    height: 300
-  }, /*#__PURE__*/React.createElement(BarChart, {
-    data: universityComparison,
-    layout: "vertical"
-  }, /*#__PURE__*/React.createElement(CartesianGrid, {
-    strokeDasharray: "3 3",
-    strokeWidth: 1.5
-  }), /*#__PURE__*/React.createElement(XAxis, {
-    type: "number",
-    domain: [0, 5],
-    tick: {
-      fill: "hsl(var(--foreground))",
-      fontWeight: 600
-    }
-  }), /*#__PURE__*/React.createElement(YAxis, {
-    dataKey: "name",
-    type: "category",
-    width: 80,
-    tick: {
-      fill: "hsl(var(--foreground))",
-      fontWeight: 600
-    }
-  }), /*#__PURE__*/React.createElement(Tooltip, {
-    contentStyle: {
-      backgroundColor: "hsl(var(--card))",
-      border: "2px solid #FB8C00",
-      borderRadius: "12px",
-      fontWeight: 600
-    }
-  }), /*#__PURE__*/React.createElement(Bar, {
-    dataKey: "overall",
-    fill: "#FB8C00",
-    radius: [0, 8, 8, 0]
-  })))))), /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement(CardHeader, null, /*#__PURE__*/React.createElement(CardTitle, null, "Recent Student Feedback"), /*#__PURE__*/React.createElement(CardDescription, null, "Latest reviews and comments")), /*#__PURE__*/React.createElement(CardContent, null, /*#__PURE__*/React.createElement("div", {
-    className: "space-y-4"
-  }, [1, 2, 3].map(item => /*#__PURE__*/React.createElement("div", {
-    key: item,
-    className: "p-4 bg-muted/30 rounded-lg"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center justify-between mb-2"
+  return (
+    <div className="min-h-screen bg-muted/30 p-2 sm:p-4 md:p-8">
+      <div className="max-w-7xl mx-auto">
+        <Button variant="ghost" onClick={() => window.history.back()} className="mb-4">
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back
+        </Button>
+
+        <div className="mb-6 md:mb-8">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">Sentiment Analytics</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Student and alumni feedback from Pakistani universities</p>
+        </div>
+
+        <Card className="mb-8">
+          <CardContent className="p-6">
+            <div className="flex flex-wrap gap-4">
+              <Select defaultValue="all">
+                <SelectTrigger className="w-48"><SelectValue placeholder="Field" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Fields</SelectItem>
+                  <SelectItem value="tech">Technology</SelectItem>
+                  <SelectItem value="eng">Engineering</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select defaultValue="all">
+                <SelectTrigger className="w-48"><SelectValue placeholder="City" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Cities</SelectItem>
+                  <SelectItem value="cambridge">Cambridge</SelectItem>
+                  <SelectItem value="stanford">Stanford</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="grid lg:grid-cols-2 gap-8 mb-8">
+          <Card>
+            <CardHeader>
+              <CardTitle>Sentiment Categories</CardTitle>
+              <CardDescription>Average ratings across dimensions</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={sentimentData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeWidth={1.5} />
+                  <XAxis dataKey="category" tick={{ fill: 'hsl(var(--foreground))', fontWeight: 600 }} />
+                  <YAxis domain={[0, 5]} tick={{ fill: 'hsl(var(--foreground))', fontWeight: 600 }} />
+                  <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '2px solid #1976D2', borderRadius: '12px', fontWeight: 600 }} />
+                  <Bar dataKey="score" radius={[8, 8, 0, 0]}>
+                    {sentimentData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>University Comparison</CardTitle>
+              <CardDescription>Overall sentiment scores</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={universityComparison} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" strokeWidth={1.5} />
+                  <XAxis type="number" domain={[0, 5]} tick={{ fill: 'hsl(var(--foreground))', fontWeight: 600 }} />
+                  <YAxis dataKey="name" type="category" width={80} tick={{ fill: 'hsl(var(--foreground))', fontWeight: 600 }} />
+                  <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '2px solid #FB8C00', borderRadius: '12px', fontWeight: 600 }} />
+                  <Bar dataKey="overall" fill="#FB8C00" radius={[0, 8, 8, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent Student Feedback</CardTitle>
+            <CardDescription>Latest reviews and comments</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {[1, 2, 3].map((item) => (
+                <div key={item} className="p-4 bg-muted/30 rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Badge>MIT</Badge>
+                      <div className="flex">{[1, 2, 3, 4, 5].map((star) => <Star key={star} className="w-4 h-4 fill-current text-secondary" />)}</div>
+                    </div>
+                    <span className="text-sm text-muted-foreground">2 days ago</span>
+                  </div>
+                  <p className="text-sm">Excellent research facilities and world-class faculty. The campus culture promotes innovation.</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2"
   }, /*#__PURE__*/React.createElement(Badge, null, "MIT"), /*#__PURE__*/React.createElement("div", {

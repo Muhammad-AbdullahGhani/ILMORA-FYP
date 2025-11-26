@@ -1,5 +1,5 @@
 // auth-service/src/services/authService.js
-import { UserModel } from '../models/MongoUser.js';
+import { UserModel } from '../models/User.js';
 
 // In-memory users used when Mongo is not enabled. This allows demo register/login flows
 // to work during development without a database.

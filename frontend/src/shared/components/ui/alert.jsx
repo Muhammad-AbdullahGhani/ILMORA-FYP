@@ -1,4 +1,3 @@
-function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
 import * as React from "react";
 import { cva } from "class-variance-authority@0.7.1";
 import { cn } from "./utils";
@@ -18,30 +17,20 @@ function Alert({
   variant,
   ...props
 }) {
-  return /*#__PURE__*/React.createElement("div", _extends({
-    "data-slot": "alert",
-    role: "alert",
-    className: cn(alertVariants({
-      variant
-    }), className)
-  }, props));
+  return (
+    <div data-slot="alert" role="alert" className={cn(alertVariants({ variant }), className)} {...props} />
+  );
 }
 function AlertTitle({
   className,
   ...props
 }) {
-  return /*#__PURE__*/React.createElement("div", _extends({
-    "data-slot": "alert-title",
-    className: cn("col-start-2 line-clamp-1 min-h-4 font-medium tracking-tight", className)
-  }, props));
+  return <div data-slot="alert-title" className={cn("col-start-2 line-clamp-1 min-h-4 font-medium tracking-tight", className)} {...props} />;
 }
 function AlertDescription({
   className,
   ...props
 }) {
-  return /*#__PURE__*/React.createElement("div", _extends({
-    "data-slot": "alert-description",
-    className: cn("text-muted-foreground col-start-2 grid justify-items-start gap-1 text-sm [&_p]:leading-relaxed", className)
-  }, props));
+  return <div data-slot="alert-description" className={cn("text-muted-foreground col-start-2 grid justify-items-start gap-1 text-sm [&_p]:leading-relaxed", className)} {...props} />;
 }
 export { Alert, AlertTitle, AlertDescription };

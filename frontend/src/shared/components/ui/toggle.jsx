@@ -28,13 +28,18 @@ function Toggle({
   size,
   ...props
 }) {
-  return /*#__PURE__*/React.createElement(TogglePrimitive.Root, _extends({
-    "data-slot": "toggle",
-    className: cn(toggleVariants({
-      variant,
-      size,
-      className
-    }))
-  }, props));
+  return (
+    <TogglePrimitive.Root
+      data-slot="toggle"
+      className={cn(
+        toggleVariants({
+          variant,
+          size,
+          className
+        })
+      )}
+      {...props}
+    />
+  );
 }
 export { Toggle, toggleVariants };
