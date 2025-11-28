@@ -5,6 +5,7 @@ import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import { Star, ArrowLeft } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
+
 export function SentimentDashboard() {
   const sentimentData = [{
     category: "Faculty",
@@ -27,9 +28,12 @@ export function SentimentDashboard() {
     score: 3.9,
     color: "#FFA726"
   }];
+  
   const universityComparison = [{
     name: "MIT",
     overall: 4.8
+  }, { name: "Stanford", overall: 4.6 }];
+
   return (
     <div className="min-h-screen bg-muted/30 p-2 sm:p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
@@ -38,36 +42,17 @@ export function SentimentDashboard() {
           Back
         </Button>
 
-        <div className="mb-6 md:mb-8">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">Sentiment Analytics</h1>
-          <p className="text-sm sm:text-base text-muted-foreground">Student and alumni feedback from Pakistani universities</p>
-        </div>
+        <Select defaultValue="all">
+          <SelectTrigger className="w-48"><SelectValue placeholder="City" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Cities</SelectItem>
+            <SelectItem value="cambridge">Cambridge</SelectItem>
+            <SelectItem value="stanford">Stanford</SelectItem>
+          </SelectContent>
+        </Select>
 
-        <Card className="mb-8">
-          <CardContent className="p-6">
-            <div className="flex flex-wrap gap-4">
-              <Select defaultValue="all">
-                <SelectTrigger className="w-48"><SelectValue placeholder="Field" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Fields</SelectItem>
-                  <SelectItem value="tech">Technology</SelectItem>
-                  <SelectItem value="eng">Engineering</SelectItem>
-                </SelectContent>
-              </Select>
 
-              <Select defaultValue="all">
-                <SelectTrigger className="w-48"><SelectValue placeholder="City" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Cities</SelectItem>
-                  <SelectItem value="cambridge">Cambridge</SelectItem>
-                  <SelectItem value="stanford">Stanford</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
-
-        <div className="grid lg:grid-cols-2 gap-8 mb-8">
+        <div className="grid lg:grid-cols-2 gap-8 mb-8 mt-4">
           <Card>
             <CardHeader>
               <CardTitle>Sentiment Categories</CardTitle>
@@ -132,17 +117,4 @@ export function SentimentDashboard() {
       </div>
     </div>
   );
-}
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-2"
-  }, /*#__PURE__*/React.createElement(Badge, null, "MIT"), /*#__PURE__*/React.createElement("div", {
-    className: "flex"
-  }, [1, 2, 3, 4, 5].map(star => /*#__PURE__*/React.createElement(Star, {
-    key: star,
-    className: "w-4 h-4 fill-current text-secondary"
-  })))), /*#__PURE__*/React.createElement("span", {
-    className: "text-sm text-muted-foreground"
-  }, "2 days ago")), /*#__PURE__*/React.createElement("p", {
-    className: "text-sm"
-  }, "Excellent research facilities and world-class faculty. The campus culture promotes innovation."))))))));
 }

@@ -16,88 +16,75 @@ export function UniversityRecommendations() {
   const [selectedUniversities, setSelectedUniversities] = useState([]);
   const [compareDialogOpen, setCompareDialogOpen] = useState(false);
   const [saved, setSaved] = useState([]);
-  const universities = [{
-    id: 1,
-    name: "National University of Sciences & Technology (NUST)",
-    location: "Islamabad",
-    country: "Pakistan",
-    image: "https://images.unsplash.com/photo-1706016899218-ebe36844f70e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx1bml2ZXJzaXR5JTIwY2FtcHVzJTIwYnVpbGRpbmd8ZW58MXx8fHwxNzYwMTgzMzQ1fDA&ixlib=rb-4.1.0&q=80&w=1080",
-    tuitionFee: "PKR 250,000/year",
-    match: 95,
-    sentiment: 4.7,
-    ranking: "#1 in Pakistan",
-    accreditation: "HEC, PEC",
-    programsOffered: ["Computer Science", "Engineering", "Business"],
-    studentsCount: "18,000"
-  }, {
-    id: 2,
-    name: "Lahore University of Management Sciences (LUMS)",
-    location: "Lahore",
-    country: "Pakistan",
-    image: "https://images.unsplash.com/photo-1706016899218-ebe36844f70e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx1bml2ZXJzaXR5JTIwY2FtcHVzJTIwYnVpbGRpbmd8ZW58MXx8fHwxNzYwMTgzMzQ1fDA&ixlib=rb-4.1.0&q=80&w=1080",
-    tuitionFee: "PKR 400,000/year",
-    match: 93,
-    sentiment: 4.6,
-    ranking: "#2 in Pakistan",
-    accreditation: "HEC",
-    programsOffered: ["Computer Science", "Business", "Economics"],
-    studentsCount: "5,500"
-  }, {
-    id: 3,
-    name: "FAST National University",
-    location: "Islamabad, Karachi, Lahore",
-    country: "Pakistan",
-    image: "https://images.unsplash.com/photo-1706016899218-ebe36844f70e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx1bml2ZXJzaXR5JTIwY2FtcHVzJTIwYnVpbGRpbmd8ZW58MXx8fHwxNzYwMTgzMzQ1fDA&ixlib=rb-4.1.0&q=80&w=1080",
-    tuitionFee: "PKR 200,000/year",
-    match: 90,
-    sentiment: 4.4,
-    ranking: "#3 in CS Pakistan",
-    accreditation: "HEC, PEC",
-    programsOffered: ["Computer Science", "Software Engineering", "AI"],
-    studentsCount: "12,000"
-  }, {
-    id: 4,
-    name: "Massachusetts Institute of Technology (MIT)",
-    location: "Cambridge, MA",
-    country: "USA",
-    image: "https://images.unsplash.com/photo-1706016899218-ebe36844f70e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx1bml2ZXJzaXR5JTIwY2FtcHVzJTIwYnVpbGRpbmd8ZW58MXx8fHwxNzYwMTgzMzQ1fDA&ixlib=rb-4.1.0&q=80&w=1080",
-    tuitionFee: "$55,000/year",
-    match: 92,
-    sentiment: 4.8,
-    ranking: "#1 Global",
-    accreditation: "AACSB, ABET",
-    programsOffered: ["Computer Science", "Engineering", "AI"],
-    studentsCount: "11,934"
-  }, {
-    id: 5,
-    name: "Institute of Business Administration (IBA) Karachi",
-    location: "Karachi",
-    country: "Pakistan",
-    image: "https://images.unsplash.com/photo-1706016899218-ebe36844f70e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx1bml2ZXJzaXR5JTIwY2FtcHVzJTIwYnVpbGRpbmd8ZW58MXx8fHwxNzYwMTgzMzQ1fDA&ixlib=rb-4.1.0&q=80&w=1080",
-    tuitionFee: "PKR 300,000/year",
-    match: 88,
-    sentiment: 4.5,
-    ranking: "#1 Business School",
-    accreditation: "HEC, AACSB",
-    programsOffered: ["Business", "Economics", "Computer Science"],
-    studentsCount: "6,500"
-  }, {
-    id: 6,
-    name: "University of Engineering & Technology (UET) Lahore",
-    location: "Lahore",
-    country: "Pakistan",
-    image: "https://images.unsplash.com/photo-1706016899218-ebe36844f70e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx1bml2ZXJzaXR5JTIwY2FtcHVzJTIwYnVpbGRpbmd8ZW58MXx8fHwxNzYwMTgzMzQ1fDA&ixlib=rb-4.1.0&q=80&w=1080",
-    tuitionFee: "PKR 150,000/year",
-    match: 85,
-    sentiment: 4.3,
-    ranking: "#1 Engineering",
-    accreditation: "HEC, PEC",
-    programsOffered: ["Civil Engineering", "Electrical Engineering", "Mechanical"],
-    studentsCount: "20,000"
-  }];
-  const filteredUniversities = universities.filter(uni => {
-    const matchesSearch = uni.name.toLowerCase().includes(searchTerm.toLowerCase()) || uni.location.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCity = cityFilter === "all" || uni.location.includes(cityFilter);
+  const [universities, setUniversities] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch universities from backend university-service
+  React.useEffect(() => {
+    let mounted = true;
+    const extractCity = (loc) => {
+      if (!loc) return '';
+      // Remove coordinate-like suffixes and trim
+      const cleaned = String(loc).replace(/\d.*$/, '').trim();
+      // Take first chunk before a double space or long comma list
+      const parts = cleaned.split(',').map(p => p.trim()).filter(Boolean);
+      return parts[0] || cleaned;
+    };
+
+    const normalize = (raw) => {
+      if (!Array.isArray(raw)) return [];
+      return raw.map((item, idx) => {
+        const name = item.University || item.name || item.university || `University ${idx + 1}`;
+        const locationRaw = item.Location || item.location || '';
+        const location = extractCity(locationRaw);
+        const students = item.Total_Students_Computed || item.Total_Students || item.Students || item.students || null;
+        const accreditation = item.Accreditation || item.Affiliation || item.Affiliations || item['Affiliation'] || '';
+        // Some datasets do not include programs - keep empty array safe
+        const programs = item.programsOffered || item.ProgramsOffered || item.programs || [];
+        return {
+          id: item.id || idx + 1,
+          name,
+          location,
+          country: '',
+          image: item.image || item.Image || item.logo || 'https://via.placeholder.com/640x360?text=University',
+          tuitionFee: item.tuitionFee || item.Tuition || 'N/A',
+          match: item.match || 0,
+          sentiment: item.sentiment || 0,
+          ranking: item.ranking || item.Ranking || '',
+          accreditation,
+          programsOffered: Array.isArray(programs) ? programs : [],
+          studentsCount: students || (item['Students'] ? String(item['Students']) : '—')
+        };
+      });
+    };
+
+    const fetchUniversities = async () => {
+      try {
+        const res = await fetch('http://localhost:3005/api/universities');
+        const data = await res.json();
+        if (!mounted) return;
+        const raw = data && (data.universities || data) ? (data.universities || data) : [];
+        setUniversities(normalize(raw));
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to fetch universities', err);
+        if (mounted) setUniversities([]);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+    fetchUniversities();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+  const filteredUniversities = (universities || []).filter(uni => {
+    const name = (uni && uni.name) ? String(uni.name).toLowerCase() : '';
+    const location = (uni && uni.location) ? String(uni.location).toLowerCase() : '';
+    const term = String(searchTerm || '').toLowerCase();
+    const matchesSearch = name.includes(term) || location.includes(term);
+    const matchesCity = cityFilter === "all" || (uni && uni.location ? String(uni.location).includes(cityFilter) : false);
     return matchesSearch && matchesCity;
   });
   const toggleSave = id => {
@@ -238,7 +225,7 @@ export function UniversityRecommendations() {
 
                       <div className="mb-4">
                         <div className="text-sm text-muted-foreground mb-2">Programs You're Interested In:</div>
-                        <div className="flex flex-wrap gap-2">{university.programsOffered.map((program, index) => <Badge key={index} variant="outline" className="bg-card">{program}</Badge>)}</div>
+                        <div className="flex flex-wrap gap-2">{(university.programsOffered || []).map((program, index) => <Badge key={index} variant="outline" className="bg-card">{program}</Badge>)}</div>
                       </div>
                     </div>
 

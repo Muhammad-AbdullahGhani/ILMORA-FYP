@@ -8,12 +8,30 @@ import { MapPin, DollarSign, Star, Users, Home, BookOpen, Heart, Share2, Externa
 import { ImageWithFallback } from "@/shared/components/ImageWithFallback";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 export function UniversityDetail() {
-  const {
-    id
+  const { id } = useParams();
+
   const scholarships = [
     { name: "Merit Scholarship", amount: "$20,000", eligibility: "GPA > 3.8" },
     { name: "Need-Based Aid", amount: "$15,000", eligibility: "Financial need" },
     { name: "Diversity Scholarship", amount: "$10,000", eligibility: "Underrepresented groups" }
+  ];
+  
+  const programs = [
+    { name: 'Computer Science', seats: 120, duration: '4 years', fee: '$40,000' },
+    { name: 'Electrical Engineering', seats: 80, duration: '4 years', fee: '$38,000' }
+  ];
+
+  const sentimentData = [
+    { category: 'Faculty', score: 4.5 },
+    { category: 'Infrastructure', score: 4.2 }
+  ];
+
+  const reviewDistribution = [
+    { name: '5-star', value: 60, color: '#1976D2' },
+    { name: '4-star', value: 25, color: '#2196F3' },
+    { name: '3-star', value: 10, color: '#FFA726' },
+    { name: '2-star', value: 3, color: '#FB8C00' },
+    { name: '1-star', value: 2, color: '#D32F2F' }
   ];
 
   return (
@@ -253,62 +271,4 @@ export function UniversityDetail() {
     </div>
   );
 }
-    className: "text-muted-foreground mb-4"
-  }, "Find student housing and hostels near the campus"), /*#__PURE__*/React.createElement(Link, {
-    to: "/hostels"
-  }, /*#__PURE__*/React.createElement(Button, {
-    className: "bg-primary"
-  }, /*#__PURE__*/React.createElement(Home, {
-    className: "w-4 h-4 mr-2"
-  }), "Browse Hostels"))))))), /*#__PURE__*/React.createElement("div", {
-    className: "space-y-6"
-  }, /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement(CardHeader, null, /*#__PURE__*/React.createElement(CardTitle, null, "Quick Actions")), /*#__PURE__*/React.createElement(CardContent, {
-    className: "space-y-3"
-  }, /*#__PURE__*/React.createElement(Button, {
-    className: "w-full bg-primary"
-  }, /*#__PURE__*/React.createElement(Heart, {
-    className: "w-4 h-4 mr-2"
-  }), "Add to Favorites"), /*#__PURE__*/React.createElement(Button, {
-    variant: "outline",
-    className: "w-full"
-  }, /*#__PURE__*/React.createElement(Share2, {
-    className: "w-4 h-4 mr-2"
-  }), "Share University"), /*#__PURE__*/React.createElement(Button, {
-    variant: "outline",
-    className: "w-full"
-  }, /*#__PURE__*/React.createElement(ExternalLink, {
-    className: "w-4 h-4 mr-2"
-  }), "Visit Website"), /*#__PURE__*/React.createElement(Button, {
-    variant: "outline",
-    className: "w-full"
-  }, /*#__PURE__*/React.createElement(MessageSquare, {
-    className: "w-4 h-4 mr-2"
-  }), "Contact Admissions"))), /*#__PURE__*/React.createElement(Card, null, /*#__PURE__*/React.createElement(CardHeader, null, /*#__PURE__*/React.createElement(CardTitle, null, "Key Stats")), /*#__PURE__*/React.createElement(CardContent, {
-    className: "space-y-4"
-  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center justify-between mb-2"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "text-sm"
-  }, "Overall Rating"), /*#__PURE__*/React.createElement("span", {
-    className: "font-bold text-primary"
-  }, "4.8/5.0")), /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-1"
-  }, [1, 2, 3, 4, 5].map(star => /*#__PURE__*/React.createElement(Star, {
-    key: star,
-    className: "w-4 h-4 fill-current text-secondary"
-  })))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    className: "text-sm text-muted-foreground mb-1"
-  }, "Acceptance Rate"), /*#__PURE__*/React.createElement("div", {
-    className: "font-bold"
-  }, "7%")), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    className: "text-sm text-muted-foreground mb-1"
-  }, "Average GPA"), /*#__PURE__*/React.createElement("div", {
-    className: "font-bold"
-  }, "3.95")), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    className: "text-sm text-muted-foreground mb-1"
-  }, "Job Placement"), /*#__PURE__*/React.createElement("div", {
-    className: "font-bold flex items-center gap-1"
-  }, "98%", /*#__PURE__*/React.createElement(TrendingUp, {
-    className: "w-4 h-4 text-green-600"
-  })))))))));
-}
+ 
