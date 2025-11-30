@@ -1,5 +1,5 @@
 import React from 'react';
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
@@ -7,108 +7,95 @@ import { Badge } from "@/shared/components/ui/badge";
 import { Input } from "@/shared/components/ui/input";
 import { Checkbox } from "@/shared/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
-import { Building2, MapPin, DollarSign, Star, TrendingUp, Search, Filter, Heart, ArrowRight, ArrowLeft, Users, Award } from "lucide-react";
+import { Building2, MapPin, DollarSign, Star, TrendingUp, Search, Filter, Heart, ArrowRight, ArrowLeft, Users, Award, Loader2, Brain } from "lucide-react";
 import { ImageWithFallback } from "@/shared/components/ImageWithFallback";
 import { CompareDialog } from "@/shared/components/CompareDialog";
+
 export function UniversityRecommendations() {
   const [searchTerm, setSearchTerm] = useState("");
   const [cityFilter, setCityFilter] = useState("all");
   const [selectedUniversities, setSelectedUniversities] = useState([]);
   const [compareDialogOpen, setCompareDialogOpen] = useState(false);
   const [saved, setSaved] = useState([]);
-  const universities = [{
-    id: 1,
-    name: "National University of Sciences & Technology (NUST)",
-    location: "Islamabad",
-    country: "Pakistan",
-    image: "https://images.unsplash.com/photo-1706016899218-ebe36844f70e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx1bml2ZXJzaXR5JTIwY2FtcHVzJTIwYnVpbGRpbmd8ZW58MXx8fHwxNzYwMTgzMzQ1fDA&ixlib=rb-4.1.0&q=80&w=1080",
-    tuitionFee: "PKR 250,000/year",
-    match: 95,
-    sentiment: 4.7,
-    ranking: "#1 in Pakistan",
-    accreditation: "HEC, PEC",
-    programsOffered: ["Computer Science", "Engineering", "Business"],
-    studentsCount: "18,000"
-  }, {
-    id: 2,
-    name: "Lahore University of Management Sciences (LUMS)",
-    location: "Lahore",
-    country: "Pakistan",
-    image: "https://images.unsplash.com/photo-1706016899218-ebe36844f70e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx1bml2ZXJzaXR5JTIwY2FtcHVzJTIwYnVpbGRpbmd8ZW58MXx8fHwxNzYwMTgzMzQ1fDA&ixlib=rb-4.1.0&q=80&w=1080",
-    tuitionFee: "PKR 400,000/year",
-    match: 93,
-    sentiment: 4.6,
-    ranking: "#2 in Pakistan",
-    accreditation: "HEC",
-    programsOffered: ["Computer Science", "Business", "Economics"],
-    studentsCount: "5,500"
-  }, {
-    id: 3,
-    name: "FAST National University",
-    location: "Islamabad, Karachi, Lahore",
-    country: "Pakistan",
-    image: "https://images.unsplash.com/photo-1706016899218-ebe36844f70e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx1bml2ZXJzaXR5JTIwY2FtcHVzJTIwYnVpbGRpbmd8ZW58MXx8fHwxNzYwMTgzMzQ1fDA&ixlib=rb-4.1.0&q=80&w=1080",
-    tuitionFee: "PKR 200,000/year",
-    match: 90,
-    sentiment: 4.4,
-    ranking: "#3 in CS Pakistan",
-    accreditation: "HEC, PEC",
-    programsOffered: ["Computer Science", "Software Engineering", "AI"],
-    studentsCount: "12,000"
-  }, {
-    id: 4,
-    name: "Massachusetts Institute of Technology (MIT)",
-    location: "Cambridge, MA",
-    country: "USA",
-    image: "https://images.unsplash.com/photo-1706016899218-ebe36844f70e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx1bml2ZXJzaXR5JTIwY2FtcHVzJTIwYnVpbGRpbmd8ZW58MXx8fHwxNzYwMTgzMzQ1fDA&ixlib=rb-4.1.0&q=80&w=1080",
-    tuitionFee: "$55,000/year",
-    match: 92,
-    sentiment: 4.8,
-    ranking: "#1 Global",
-    accreditation: "AACSB, ABET",
-    programsOffered: ["Computer Science", "Engineering", "AI"],
-    studentsCount: "11,934"
-  }, {
-    id: 5,
-    name: "Institute of Business Administration (IBA) Karachi",
-    location: "Karachi",
-    country: "Pakistan",
-    image: "https://images.unsplash.com/photo-1706016899218-ebe36844f70e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx1bml2ZXJzaXR5JTIwY2FtcHVzJTIwYnVpbGRpbmd8ZW58MXx8fHwxNzYwMTgzMzQ1fDA&ixlib=rb-4.1.0&q=80&w=1080",
-    tuitionFee: "PKR 300,000/year",
-    match: 88,
-    sentiment: 4.5,
-    ranking: "#1 Business School",
-    accreditation: "HEC, AACSB",
-    programsOffered: ["Business", "Economics", "Computer Science"],
-    studentsCount: "6,500"
-  }, {
-    id: 6,
-    name: "University of Engineering & Technology (UET) Lahore",
-    location: "Lahore",
-    country: "Pakistan",
-    image: "https://images.unsplash.com/photo-1706016899218-ebe36844f70e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx1bml2ZXJzaXR5JTIwY2FtcHVzJTIwYnVpbGRpbmd8ZW58MXx8fHwxNzYwMTgzMzQ1fDA&ixlib=rb-4.1.0&q=80&w=1080",
-    tuitionFee: "PKR 150,000/year",
-    match: 85,
-    sentiment: 4.3,
-    ranking: "#1 Engineering",
-    accreditation: "HEC, PEC",
-    programsOffered: ["Civil Engineering", "Electrical Engineering", "Mechanical"],
-    studentsCount: "20,000"
-  }];
+  const [sentimentRatings, setSentimentRatings] = useState({});
+  const [loadingSentiments, setLoadingSentiments] = useState(true);
+  const [universities, setUniversities] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUniversities = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('http://localhost:3005/api/universities');
+        if (response.ok) {
+          const data = await response.json();
+          const mappedUniversities = data.universities.map((uni, index) => ({
+            id: uni._id || index,
+            name: uni.name,
+            apiName: uni.apiName || uni.name,
+            location: uni.location || "Pakistan",
+            country: "Pakistan",
+            image: uni.image || "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=2070",
+            tuitionFee: "PKR 150,000/sem", // Placeholder
+            match: 85 + (index % 15), // Mock match score
+            ranking: `#${index + 1} in Region`,
+            accreditation: uni.affiliation || "HEC Recognized",
+            programsOffered: ["Computer Science", "Business", "Engineering"], // Placeholder
+            studentsCount: uni.totalStudents ? uni.totalStudents.toLocaleString() : "N/A"
+          }));
+          setUniversities(mappedUniversities);
+        }
+      } catch (error) {
+        console.error("Failed to fetch universities:", error);
+      } finally {
+        setLoading(false);
+        setLoadingSentiments(false);
+      }
+    };
+
+    fetchUniversities();
+  }, []);
+
+  // Effect to fetch sentiments if they weren't in the list
+  useEffect(() => {
+    if (universities.length === 0) return;
+
+    const fetchSentiments = async () => {
+      const ratings = {};
+      for (const uni of universities) {
+        try {
+          const res = await fetch(`http://localhost:3005/api/reviews/${uni.apiName}/stats`);
+          if (res.ok) {
+            const data = await res.json();
+            ratings[uni.id] = data.stats?.overallRating || 0;
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }
+      setSentimentRatings(ratings);
+    };
+    fetchSentiments();
+  }, [universities]);
+
   const filteredUniversities = universities.filter(uni => {
     const matchesSearch = uni.name.toLowerCase().includes(searchTerm.toLowerCase()) || uni.location.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCity = cityFilter === "all" || uni.location.includes(cityFilter);
     return matchesSearch && matchesCity;
   });
+
   const toggleSave = id => {
     setSaved(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
   };
+
   const toggleUniversitySelection = id => {
     setSelectedUniversities(prev => prev.includes(id) ? prev.filter(uniId => uniId !== id) : [...prev, id]);
   };
+
   const getSelectedUniversitiesData = () => {
     return universities.filter(uni => selectedUniversities.includes(uni.id));
   };
+
   return (
     <div className="min-h-screen bg-muted/30 p-2 sm:p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
@@ -124,7 +111,15 @@ export function UniversityRecommendations() {
             </div>
             <div>
               <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold">University Recommendations</h1>
-              <p className="text-sm sm:text-base text-muted-foreground">Top universities in Pakistan & abroad matching your profile</p>
+              <p className="text-sm sm:text-base text-muted-foreground">
+                Top universities in Pakistan & abroad matching your profile
+                {loadingSentiments && (
+                  <span className="ml-2 inline-flex items-center gap-1 text-primary">
+                    <Brain className="w-4 h-4 animate-pulse" />
+                    Loading AI ratings...
+                  </span>
+                )}
+              </p>
             </div>
           </div>
         </div>
@@ -171,87 +166,104 @@ export function UniversityRecommendations() {
         </div>
 
         <div className="grid gap-6">
-          {filteredUniversities.map((university) => (
-            <Card key={university.id} className={`hover:shadow-xl transition-all border-2 overflow-hidden ${selectedUniversities.includes(university.id) ? 'border-primary shadow-lg' : 'hover:border-primary/50'}`}>
-              <div className="flex flex-col lg:flex-row">
-                <div className="lg:w-80 h-64 lg:h-auto relative overflow-hidden">
-                  <ImageWithFallback src={university.image} alt={university.name} className="w-full h-full object-cover" />
-                  <div className="absolute top-4 right-4 flex gap-2">
-                    <div className="bg-white dark:bg-gray-900 rounded-full p-2 shadow-lg">
-                      <Checkbox checked={selectedUniversities.includes(university.id)} onCheckedChange={() => toggleUniversitySelection(university.id)} />
+          {filteredUniversities.map((university) => {
+            const sentiment = sentimentRatings[university.id];
+            const hasSentiment = sentiment && sentiment > 0;
+
+            return (
+              <Card key={university.id} className={`hover:shadow-xl transition-all border-2 overflow-hidden ${selectedUniversities.includes(university.id) ? 'border-primary shadow-lg' : 'hover:border-primary/50'}`}>
+                <div className="flex flex-col lg:flex-row">
+                  <div className="lg:w-80 h-64 lg:h-auto relative overflow-hidden">
+                    <ImageWithFallback src={university.image} alt={university.name} className="w-full h-full object-cover" />
+                    <div className="absolute top-4 right-4 flex gap-2">
+                      <div className="bg-white dark:bg-gray-900 rounded-full p-2 shadow-lg">
+                        <Checkbox checked={selectedUniversities.includes(university.id)} onCheckedChange={() => toggleUniversitySelection(university.id)} />
+                      </div>
+                      <Button size="icon" variant={saved.includes(university.id) ? "default" : "secondary"} className="rounded-full shadow-lg" onClick={() => toggleSave(university.id)}>
+                        <Heart className={`w-5 h-5 ${saved.includes(university.id) ? "fill-current" : ""}`} />
+                      </Button>
                     </div>
-                    <Button size="icon" variant={saved.includes(university.id) ? "default" : "secondary"} className="rounded-full shadow-lg" onClick={() => toggleSave(university.id)}>
-                      <Heart className={`w-5 h-5 ${saved.includes(university.id) ? "fill-current" : ""}`} />
-                    </Button>
+                    <div className="absolute top-4 left-4">
+                      <Badge className="bg-primary shadow-lg">{university.match}% Match</Badge>
+                    </div>
                   </div>
-                  <div className="absolute top-4 left-4">
-                    <Badge className="bg-primary shadow-lg">{university.match}% Match</Badge>
-                  </div>
+
+                  <CardContent className="flex-1 p-6">
+                    <div className="flex flex-col h-full">
+                      <div className="flex-1">
+                        <div className="flex items-start justify-between mb-3">
+                          <div>
+                            <h3 className="text-2xl font-bold mb-2">{university.name}</h3>
+                            <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground mb-3">
+                              <div className="flex items-center gap-1"><MapPin className="w-4 h-4" />{university.location}</div>
+                              <Badge variant="outline">{university.ranking}</Badge>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="grid md:grid-cols-2 gap-4 mb-4">
+                          <div className="flex items-center gap-2">
+                            <DollarSign className="w-5 h-5 text-green-600" />
+                            <div>
+                              <div className="text-sm text-muted-foreground">Tuition Fee</div>
+                              <div className="font-medium">{university.tuitionFee}</div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <Star className="w-5 h-5 text-secondary" />
+                            <div>
+                              <div className="text-sm text-muted-foreground">AI Sentiment Rating</div>
+                              {loadingSentiments ? (
+                                <div className="font-medium flex items-center gap-1">
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                  Loading...
+                                </div>
+                              ) : hasSentiment ? (
+                                <div className="font-medium flex items-center gap-1">
+                                  {sentiment.toFixed(1)}/5.0 <TrendingUp className="w-4 h-4 text-green-600" />
+                                  <Badge variant="outline" className="ml-1 text-xs">AI</Badge>
+                                </div>
+                              ) : (
+                                <div className="text-sm text-muted-foreground">No reviews yet</div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <Users className="w-5 h-5 text-primary" />
+                          <div>
+                            <div className="text-sm text-muted-foreground">Total Students</div>
+                            <div className="font-medium">{university.studentsCount}</div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <Award className="w-5 h-5 text-accent" />
+                          <div>
+                            <div className="text-sm text-muted-foreground">Accreditation</div>
+                            <div className="font-medium">{university.accreditation}</div>
+                          </div>
+                        </div>
+
+                        <div className="mb-4">
+                          <div className="text-sm text-muted-foreground mb-2">Programs You're Interested In:</div>
+                          <div className="flex flex-wrap gap-2">{university.programsOffered.map((program, index) => <Badge key={index} variant="outline" className="bg-card">{program}</Badge>)}</div>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap gap-3 pt-4 border-t">
+                        <Link to={`/university/${university.apiName}`} className="flex-1 min-w-[200px]"><Button className="w-full bg-primary hover:bg-primary/90">View Details <ArrowRight className="ml-2 w-4 h-4" /></Button></Link>
+                        <Button variant="outline" className="flex-1 min-w-[120px]">Compare</Button>
+                        <Link to="/scholarships" className="flex-1 min-w-[150px]"><Button variant="outline" className="w-full">Find Scholarships</Button></Link>
+                      </div>
+                    </div>
+                  </CardContent>
                 </div>
-
-                <CardContent className="flex-1 p-6">
-                  <div className="flex flex-col h-full">
-                    <div className="flex-1">
-                      <div className="flex items-start justify-between mb-3">
-                        <div>
-                          <h3 className="text-2xl font-bold mb-2">{university.name}</h3>
-                          <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground mb-3">
-                            <div className="flex items-center gap-1"><MapPin className="w-4 h-4" />{university.location}</div>
-                            <Badge variant="outline">{university.ranking}</Badge>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="grid md:grid-cols-2 gap-4 mb-4">
-                        <div className="flex items-center gap-2">
-                          <DollarSign className="w-5 h-5 text-green-600" />
-                          <div>
-                            <div className="text-sm text-muted-foreground">Tuition Fee</div>
-                            <div className="font-medium">{university.tuitionFee}</div>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <Star className="w-5 h-5 text-secondary" />
-                          <div>
-                            <div className="text-sm text-muted-foreground">Sentiment Rating</div>
-                            <div className="font-medium flex items-center gap-1">{university.sentiment}/5.0 <TrendingUp className="w-4 h-4 text-green-600" /></div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <Users className="w-5 h-5 text-primary" />
-                        <div>
-                          <div className="text-sm text-muted-foreground">Total Students</div>
-                          <div className="font-medium">{university.studentsCount}</div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <Award className="w-5 h-5 text-accent" />
-                        <div>
-                          <div className="text-sm text-muted-foreground">Accreditation</div>
-                          <div className="font-medium">{university.accreditation}</div>
-                        </div>
-                      </div>
-
-                      <div className="mb-4">
-                        <div className="text-sm text-muted-foreground mb-2">Programs You're Interested In:</div>
-                        <div className="flex flex-wrap gap-2">{university.programsOffered.map((program, index) => <Badge key={index} variant="outline" className="bg-card">{program}</Badge>)}</div>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-wrap gap-3 pt-4 border-t">
-                      <Link to={`/university/${university.id}`} className="flex-1 min-w-[200px]"><Button className="w-full bg-primary hover:bg-primary/90">View Details <ArrowRight className="ml-2 w-4 h-4" /></Button></Link>
-                      <Button variant="outline" className="flex-1 min-w-[120px]">Compare</Button>
-                      <Link to="/scholarships" className="flex-1 min-w-[150px]"><Button variant="outline" className="w-full">Find Scholarships</Button></Link>
-                    </div>
-                  </div>
-                </CardContent>
-              </div>
-            </Card>
-          ))}
+              </Card>
+            );
+          })}
         </div>
 
         <Card className="mt-8 bg-gradient-to-r from-primary/10 to-secondary/10 border-2">

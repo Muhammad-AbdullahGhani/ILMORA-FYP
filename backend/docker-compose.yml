@@ -23,6 +23,21 @@ services:
     build: ./services/quiz-service
     ports:
       - "3002:3002"
+  university-service:
+    build: ./services/university-service
+    ports:
+      - "3005:3005"
+    environment:
+      - PORT=3005
+      - MONGO_URI=mongodb://university-db:27017/ilm-ora-university
+    depends_on:
+      - university-db
+  university-db:
+    image: mongo:6.0
+    restart: always
+    volumes:
+      - university-db-data:/data/db
 
 volumes:
   auth-db-data:
+  university-db-data:

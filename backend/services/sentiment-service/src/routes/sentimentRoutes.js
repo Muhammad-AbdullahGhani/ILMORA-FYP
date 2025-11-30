@@ -1,5 +1,10 @@
+// src/routes/sentimentRoutes.ts
 import { Router } from 'express';
-import { analyze } from '../controllers/sentimentController';
+import { SentimentController } from '../controllers/sentimentController';
+
 const router = Router();
-router.post('/', analyze);
+const controller = new SentimentController();
+
+router.post('/analyze', (req, res) => controller.analyzeUniversity(req, res));
+
 export default router;
