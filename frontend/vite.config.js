@@ -77,11 +77,16 @@ export default defineConfig({
     port: 3000,
     open: true,
     proxy: {
+       '/api/recommend': {
+    target: 'http://127.0.0.1:8001',
+    changeOrigin: true,
+    rewrite: path => path.replace(/^\/api\/recommend/, '')
+    },
       '/api': {
-        target: 'http://localhost:3001',
+        target: 'http://127.0.0.1:8000',
         changeOrigin: true,
         secure: false,
-        rewrite: path => path.replace(/^\/api/, '/api')
+        rewrite: path => path.replace(/^\/api/, '')
       }
     }
   }

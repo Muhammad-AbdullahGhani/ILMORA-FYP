@@ -1,45 +1,96 @@
-export class QuizLogic {
+import { quizAPI } from "../../infrastructure/api/quizAPI";
+import { useQuizStore } from "../../store/useQuizStore";
+
+export const quizService = {
   /**
-   * Calculate RIASEC scores from quiz responses
+   * Step 1: Start the Adaptive Quiz
    */
-  static calculateScores(responses, questions) {
-    const scores = {
-      realistic: 0,
-      investigative: 0,
-      artistic: 0,
-      social: 0,
-      enterprising: 0,
-      conventional: 0
-    };
-    responses.forEach(response => {
-      const question = questions.find(q => q.id === response.questionId);
-      if (question) {
-        const category = question.category;
-        scores[category] += response.value * question.weight;
+  async startQuiz() {
+    const store = useQuizStore.getState();
+    store.setLoading(true);
+    store.reset(); // Clear old data
+
+    try {
+      const response = await quizAPI.startQuiz();
+      const data = response.data; // { session_id, next_question, is_complete ... }
+
+      store.setSessionId(data.session_id);
+      
+      if (data.next_question) {
+        store.setCurrentQuestion(data.next_question);
       }
-    });
-
-    // Normalize scores to 0-100 range
-    const maxScore = Math.max(...Object.values(scores));
-    if (maxScore > 0) {
-      Object.keys(scores).forEach(key => {
-        scores[key] = scores[key] / maxScore * 100;
-      });
+      
+      store.setLoading(false);
+      return data;
+    } catch (error) {
+      console.error("Failed to start quiz:", error);
+      store.setError("Failed to start quiz");
+      store.setLoading(false);
+      throw error;
     }
-    return scores;
-  }
+  },
 
   /**
-   * Get dominant RIASEC types (top 3)
+   * Step 2: Submit ONE answer and handle the response (Next Question or Results)
    */
-  static getDominantTypes(scores) {
-    return Object.entries(scores).sort(([, a], [, b]) => b - a).slice(0, 3).map(([type]) => type);
-  }
+  async submitAnswer(score) {
+    const store = useQuizStore.getState();
+    const { sessionId, currentQuestion } = store;
+
+    if (!sessionId || !currentQuestion) {
+      console.error("Missing session or question data");
+      return;
+    }
+
+    store.setLoading(true);
+
+    // Prepare payload matching Python backend expectation
+    const payload = {
+      session_id: sessionId,
+      question_id: currentQuestion.id,
+      dimension: currentQuestion.dimension,
+      score: score // 1-5
+    };
+
+    try {
+      // 1. Record in local history for UI
+      store.recordAnswer(currentQuestion.id, currentQuestion.dimension, score);
+
+      // 2. Send to Backend
+      const response = await quizAPI.submitAnswer(payload);
+      const data = response.data;
+
+      // 3. Handle Logic: Is it finished?
+      if (data.is_complete) {
+        store.setComplete(true);
+        store.setCurrentQuestion(null); // No more questions
+        // Automatically fetch results
+        await this.getFinalResults(sessionId);
+      } else {
+        // 4. If not finished, show next question
+        store.setCurrentQuestion(data.next_question);
+      }
+
+      store.setLoading(false);
+    } catch (error) {
+      console.error("Failed to submit answer:", error);
+      store.setError("Failed to submit answer");
+      store.setLoading(false);
+    }
+  },
 
   /**
-   * Validate quiz completion
+   * Step 3: Fetch Final Results
    */
-  static isQuizComplete(responses, totalQuestions) {
-    return responses.length === totalQuestions && responses.every(r => r.value >= 1 && r.value <= 5);
+  async getFinalResults(sessionId) {
+    const store = useQuizStore.getState();
+    try {
+      const response = await quizAPI.getResults(sessionId);
+      store.setScores(response.data); // { holland_code, dimension_averages ... }
+      return response.data;
+    } catch (error) {
+      console.error("Failed to get results:", error);
+      store.setError("Failed to get results");
+    }
   }
-}
+};
