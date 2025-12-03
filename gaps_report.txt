@@ -1,0 +1,29 @@
+--- Universities with 0 Reviews (19) ---
+- Al-karam International University, Islamabad
+- Al-khair University [ajk], Islamabad
+- Allama Iqbal Open University, Islamabad
+- Bahria University, E-8 Campus, Islamabad
+- Federal Urdu University Of Arts Science & Technology Islamabad, Islamabad
+- Institute Of Space Technology, Islamabad
+- International Islamic University, Islamabad
+- Mohiuddin Islamic University[islamabad Campus], Islamabad
+- National Defence University, Islamabad
+- National Skills University, Islamabad
+- National University Of Technology, Islamabad
+- Northern University, Islamabad
+- Pakistan Institute Of Development Economics, Islamabad
+- Shaheed Zulfiqar Ali Bhutto Medical University, Pims, Islamabad
+- Shifa Tameer-e-millat University, Islamabad
+- Sir Syed Case Institute Of Technology, Islamabad
+- Abasyn University (sub Campus), Islamabad
+- Air University, H-11 Campus, Islamabad
+- Bahria University, H-11 Campus, Islamabad
+
+--- Reviews with Missing University Profiles (7) ---
+- APCOMS
+- BNU - Beaconhouse National University
+- Fatima Jinnah Women University (Rawalpindi)
+- GIKI (commuter students)
+- Rawalpindi Medical University
+- Riphah Rawalpindi Campus
+- SZABIST Islamabad

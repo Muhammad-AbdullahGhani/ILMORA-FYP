@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>University Review System - AI Model Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 14px 32px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+            display: none;
+        }
+        
+        .result.show {
+            display: block;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .rating {
+            font-size: 48px;
+            font-weight: bold;
+            color: #667eea;
+            margin: 10px 0;
+        }
+        
+        .stars {
+            font-size: 32px;
+            color: #ffd700;
+        }
+        
+        .error {
+            background: #fee;
+            border-left-color: #f44;
+            color: #c33;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎓 University Review System</h1>
+        <p class="subtitle">AI-Powered Rating Prediction using DeBERTA Model</p>
+        
+        <form id="reviewForm">
+            <div class="form-group">
+                <label for="university">University</label>
+                <select id="university" required>
+                    <option value="">Select University</option>
+                    <option value="NUST">NUST - National University of Sciences & Technology</option>
+                    <option value="FAST NUCES">FAST NUCES</option>
+                    <option value="COMSATS">COMSATS University</option>
+                    <option value="LUMS">LUMS - Lahore University of Management Sciences</option>
+                    <option value="University of Karachi">University of Karachi</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="city">City</label>
+                <input type="text" id="city" value="Islamabad" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="factor">Factor</label>
+                <select id="factor" required>
+                    <option value="">Select Factor</option>
+                    <option value="Academics">Academics</option>
+                    <option value="Faculty">Faculty</option>
+                    <option value="Campus Life">Campus Life</option>
+                    <option value="Facilities">Facilities</option>
+                    <option value="Placements">Placements</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="review">Your Review</label>
+                <textarea id="review" placeholder="Write your review here..." required></textarea>
+            </div>
+            
+            <button type="submit">🤖 Predict Rating with AI</button>
+        </form>
+        
+        <div id="result" class="result">
+            <h3>Predicted Rating</h3>
+            <div class="rating" id="ratingValue"></div>
+            <div class="stars" id="stars"></div>
+            <p id="message"></p>
+        </div>
+        
+        <div id="loading" class="result loading" style="display: none;">
+            <div class="spinner"></div>
+            <p style="margin-top: 10px;">AI is analyzing your review...</p>
+        </div>
+    </div>
+    
+    <script>
+        const form = document.getElementById('reviewForm');
+        const resultDiv = document.getElementById('result');
+        const loadingDiv = document.getElementById('loading');
+        
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const reviewData = {
+                review_text: document.getElementById('review').value,
+                factor: document.getElementById('factor').value,
+                university: document.getElementById('university').value,
+                city: document.getElementById('city').value
+            };
+            
+            // Show loading
+            resultDiv.classList.remove('show');
+            resultDiv.classList.remove('error');
+            loadingDiv.style.display = 'block';
+            
+            try {
+                const response = await fetch('http://localhost:3005/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(reviewData)
+                });
+                
+                const data = await response.json();
+                
+                // Hide loading
+                loadingDiv.style.display = 'none';
+                
+                if (data.rating) {
+                    // Show result
+                    const rating = data.rating;
+                    const fullStars = Math.floor(rating);
+                    const hasHalfStar = (rating % 1) >= 0.5;
+                    
+                    let starsHTML = '';
+                    for (let i = 0; i < fullStars; i++) {
+                        starsHTML += '⭐';
+                    }
+                    if (hasHalfStar && fullStars < 5) {
+                        starsHTML += '✨';
+                    }
+                    
+                    document.getElementById('ratingValue').textContent = rating.toFixed(2) + ' / 5.0';
+                    document.getElementById('stars').innerHTML = starsHTML;
+                    document.getElementById('message').textContent = 
+                        `Your review about ${reviewData.factor} at ${reviewData.university} was analyzed by our trained DeBERTA model!`;
+                    
+                    resultDiv.classList.add('show');
+                } else {
+                    throw new Error('No rating in response');
+                }
+                
+            } catch (error) {
+                loadingDiv.style.display = 'none';
+                resultDiv.classList.add('error');
+                resultDiv.classList.add('show');
+                document.getElementById('ratingValue').textContent = 'Error';
+                document.getElementById('stars').innerHTML = '❌';
+                document.getElementById('message').textContent = 
+                    'Failed to predict rating. Make sure the Python service is running on port 3005.';
+            }
+        });
+    </script>
+</body>
+</html>
