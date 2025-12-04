@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
@@ -44,6 +44,11 @@ export function DegreeRecommendations() {
         
         // Prepare Payload for Python Backend
         // Backend Controller expects: R, I, A, S, E, C (float 1-5) and background object
+        // Ensure background has valid string values (not null)
+        const background = studentBackground && studentBackground.level && studentBackground.group
+          ? studentBackground
+          : { level: "Intermediate", group: "Pre-Engineering" };
+        
         const payload = {
           R: scores.dimension_averages.R,
           I: scores.dimension_averages.I,
@@ -51,7 +56,10 @@ export function DegreeRecommendations() {
           S: scores.dimension_averages.S,
           E: scores.dimension_averages.E,
           C: scores.dimension_averages.C,
-          background: studentBackground || { level: "Intermediate", group: "Pre-Engineering" } // Fallback if missing
+          background: {
+            level: background.level || "Intermediate",
+            group: background.group || "Pre-Engineering"
+          }
         };
 
         // Call the Recommendation Microservice
@@ -61,7 +69,17 @@ export function DegreeRecommendations() {
         setRecommendations(response.data);
       } catch (err) {
         console.error("AI Recommendation Failed:", err);
-        setError("Could not generate recommendations. Please try again.");
+        
+        // Provide more specific error messages
+        if (err.code === 'ECONNABORTED' || err.message.includes('timeout')) {
+          setError("Request timed out. The AI model may be loading. Please wait a moment and try again.");
+        } else if (err.response?.status === 500) {
+          setError("Server error. The recommendation service may be unavailable. Please try again later.");
+        } else if (err.response?.status === 404) {
+          setError("No recommendations available. Please ensure you've completed the quiz.");
+        } else {
+          setError("Could not generate recommendations. Please try again.");
+        }
       } finally {
         setLoading(false);
       }

@@ -65,12 +65,20 @@ def calculate_next_step(state: Dict[str, Any]) -> Tuple[Dict[str, Any], Optional
             state['exploit_index'] += 1
 
     # Fetch Question
-    if state['pools'][dim_to_ask]:
-        q = state['pools'][dim_to_ask].pop(0)
+    pool = state['pools'].get(dim_to_ask, [])
+    if pool:
+        q = pool.pop(0)
+        # Ensure dimension is set (it should already be set, but ensure it)
         q['dimension'] = dim_to_ask
+        # Ensure question has all required fields
+        if 'id' not in q or 'text' not in q:
+            print(f"ERROR: Question missing required fields: {q}")
+            state['is_complete'] = True
+            return state, None
         return state, q
     else:
         # Fallback if pool is empty
+        print(f"WARNING: Pool for dimension {dim_to_ask} is empty!")
         state['is_complete'] = True
         return state, None
 

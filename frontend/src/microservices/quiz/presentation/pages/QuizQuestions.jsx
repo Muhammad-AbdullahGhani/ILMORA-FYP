@@ -56,7 +56,8 @@ export function QuizQuestions() {
     isComplete, 
     scores,
     history,
-    sessionId 
+    sessionId,
+    error
   } = useQuizStore();
 
   // --- Local State for Background Form ---
@@ -123,8 +124,35 @@ export function QuizQuestions() {
 
   // --- RENDER LOGIC ---
 
-  // 1. Show Background Form (Before Quiz Starts)
-  if (showBackgroundForm && !currentQuestion && !isLoading) {
+  // 0. Error State
+  if (error && !isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+        <Card className="w-full max-w-md">
+          <CardContent className="p-6 text-center">
+            <p className="text-lg font-medium text-red-600 mb-4">{error}</p>
+            <Button onClick={() => {
+              useQuizStore.getState().reset();
+              setShowBackgroundForm(true);
+            }}>Try Again</Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // 1. Loading State
+  if (isLoading && !currentQuestion) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <Loader2 className="w-12 h-12 animate-spin text-primary" />
+        <p className="ml-4 text-lg font-medium text-gray-600">Loading your personalized quiz...</p>
+      </div>
+    );
+  }
+
+  // 2. Show Background Form (Before Quiz Starts) - Show if no sessionId or no currentQuestion
+  if ((!sessionId || !currentQuestion) && !isLoading) {
     // Get valid majors based on selected level
     const availableGroups = background.level ? groupOptions[background.level] : [];
 
@@ -179,18 +207,20 @@ export function QuizQuestions() {
     );
   }
 
-  // 2. Loading State
-  if (isLoading && !currentQuestion) {
+  // 3. Quiz Interface - Only show if we have a currentQuestion
+  if (!currentQuestion) {
+    // Fallback: If we somehow get here, show an error message
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Loader2 className="w-12 h-12 animate-spin text-primary" />
-        <p className="ml-4 text-lg font-medium text-gray-600">Loading your personalized quiz...</p>
+        <Card className="w-full max-w-md">
+          <CardContent className="p-6 text-center">
+            <p className="text-lg font-medium text-gray-600 mb-4">No question available. Please start the quiz.</p>
+            <Button onClick={() => setShowBackgroundForm(true)}>Start Quiz</Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
-
-  // 3. Quiz Interface
-  if (!currentQuestion) return null;
 
   const theme = getDimensionTheme(currentQuestion.dimension);
 

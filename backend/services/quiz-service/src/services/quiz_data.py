@@ -34,16 +34,28 @@ def load_questions() -> Dict[str, List[Dict[str, Any]]]:
         for q in questions_list:
             dim = q.get('dimension')
             if dim in RIASEC_DIMENSIONS:
+                question_text = q.get('gamified_text', q.get('text'))
+                question_id = q.get('id')
+                
+                # Validate required fields
+                if not question_text:
+                    print(f"WARNING: Question {question_id} has no text, skipping")
+                    continue
+                if not question_id:
+                    print(f"WARNING: Question missing ID, skipping")
+                    continue
+                    
                 processed_questions[dim].append({
-                    'id': q.get('id'),
-                    # Uses 'gamified_text' if available, otherwise falls back to 'text'
-                    'text': q.get('gamified_text', q.get('text')), 
+                    'id': question_id,
+                    'text': question_text,
                     'dimension': dim
                 })
         
-        # Log success
+        # Log success with per-dimension counts
         count = sum(len(v) for v in processed_questions.values())
         print(f"SUCCESS: Loaded {count} questions.")
+        for dim in RIASEC_DIMENSIONS:
+            print(f"  {dim}: {len(processed_questions[dim])} questions")
 
     except Exception as e:
         print(f"Error loading questions: {e}")
@@ -57,7 +69,11 @@ def get_initial_state() -> Dict[str, Any]:
     """Creates a fresh state object for a new user."""
     # Create independent copies of question pools
     user_pools = {dim: QUESTION_POOLS[dim].copy() for dim in RIASEC_DIMENSIONS}
-    for pool in user_pools.values():
+    
+    # Validate pools are not empty
+    for dim, pool in user_pools.items():
+        if not pool:
+            print(f"ERROR: Pool for dimension {dim} is empty!")
         random.shuffle(pool)
 
     # Generate Baseline Sequence (Phase 1)

@@ -9,7 +9,7 @@ from src.controllers.rec_Controller import (
 )
 
 router = APIRouter(
-    prefix="api/recommend",
+    prefix="/api/recommend",
     tags=["Recommendation"]
 )
 
@@ -26,13 +26,21 @@ def recommend_degrees(payload: RecommendationRequest):
         if recommendations is None or len(recommendations) == 0:
             raise HTTPException(
                 status_code=404,
-                detail="No degree recommendations available. Model may not be loaded."
+                detail="No degree recommendations available. Model may not be loaded or no matching degrees found."
             )
 
         return recommendations
 
+    except HTTPException:
+        # Re-raise HTTP exceptions as-is
+        raise
     except Exception as e:
+        # Log the full error for debugging
+        import traceback
+        error_detail = f"Internal error: {str(e)}"
+        print(f"ERROR in recommend_degrees: {error_detail}")
+        print(traceback.format_exc())
         raise HTTPException(
             status_code=500,
-            detail=f"Internal error: {str(e)}"
+            detail=error_detail
         )

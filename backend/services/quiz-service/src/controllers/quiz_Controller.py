@@ -21,6 +21,11 @@ def create_session(request: StartQuizRequest) -> QuizStatus:
     # 4. Get First Question
     updated_state, next_q = quiz_Logic.calculate_next_step(state)
     
+    # Debug: Check if question was returned
+    if next_q is None:
+        print(f"ERROR: No question returned for new session {session_id}")
+        print(f"State pools: {[(dim, len(pool)) for dim, pool in updated_state['pools'].items()]}")
+    
     # 5. Save
     sessions[session_id] = updated_state
     

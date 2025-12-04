@@ -9,6 +9,11 @@ export const recommendationService = {
     try {
       // Prepare payload for backend
       // Backend expects: { R, I, A, S, E, C, background: { level, group } }
+      // Ensure background has valid string values (not null)
+      const background = studentBackground && studentBackground.level && studentBackground.group
+        ? studentBackground
+        : { level: "Intermediate", group: "Pre-Engineering" };
+      
       const payload = {
         R: userScores.dimension_averages.R,
         I: userScores.dimension_averages.I,
@@ -16,7 +21,10 @@ export const recommendationService = {
         S: userScores.dimension_averages.S,
         E: userScores.dimension_averages.E,
         C: userScores.dimension_averages.C,
-        background: studentBackground
+        background: {
+          level: background.level || "Intermediate",
+          group: background.group || "Pre-Engineering"
+        }
       };
 
       // Call API

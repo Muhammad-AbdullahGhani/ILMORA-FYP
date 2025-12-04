@@ -7,7 +7,9 @@ from typing import List, Optional
 
 # --- PATHS ---
 # Adjust relative path to find models_artifacts folder
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
+# __file__ is src/controllers/rec_Controller.py
+# We need to go: controllers -> src -> (stay in src) -> models_artifacts
+BASE_DIR = Path(__file__).resolve().parent.parent  # This is 'src'
 MODEL_PATH = BASE_DIR / "models_artifacts" / "degree_model.pkl"
 ENCODER_PATH = BASE_DIR / "models_artifacts" / "bg_encoder.pkl"
 
@@ -18,14 +20,25 @@ bg_encoder = None
 def load_artifacts():
     global model, bg_encoder
     try:
-        if MODEL_PATH.exists():
+        print(f"🔍 Looking for model at: {MODEL_PATH}")
+        print(f"🔍 Looking for encoder at: {ENCODER_PATH}")
+        print(f"🔍 Model path exists: {MODEL_PATH.exists()}")
+        print(f"🔍 Encoder path exists: {ENCODER_PATH.exists()}")
+        
+        if MODEL_PATH.exists() and ENCODER_PATH.exists():
             model = joblib.load(MODEL_PATH)
             bg_encoder = joblib.load(ENCODER_PATH)
             print(f"✅ AI Model loaded from {MODEL_PATH}")
+            print(f"✅ Background encoder loaded from {ENCODER_PATH}")
         else:
             print(f"❌ Model file not found at {MODEL_PATH}")
+            print(f"❌ Encoder file not found at {ENCODER_PATH}")
+            print(f"   Current working directory: {Path.cwd()}")
+            print(f"   BASE_DIR resolved to: {BASE_DIR}")
     except Exception as e:
         print(f"❌ Error loading model: {e}")
+        import traceback
+        print(traceback.format_exc())
 
 # --- SCHEMAS (Must match frontend payload) ---
 class StudentBackground(BaseModel):
@@ -99,10 +112,14 @@ DEGREE_METADATA = {
 # --- LOGIC ---
 def get_recommendations(request: RecommendationRequest) -> List[DegreeMatch]:
     # 1. Load Model if needed
-    if model is None:
+    if model is None or bg_encoder is None:
+        print("⚠️ Model not loaded, attempting to load now...")
         load_artifacts()
-        if model is None:
+        if model is None or bg_encoder is None:
+            print("❌ Failed to load model. Cannot generate recommendations.")
             return [] # Fail gracefully if model is missing
+    
+    print(f"✅ Model ready. Processing recommendation request...")
 
     # 2. Prepare Input Vector
     # The model expects: [R, I, A, S, E, C, bg_encoded]
