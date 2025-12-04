@@ -1,44 +1,69 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
-import { Brain, TrendingUp, Award, RefreshCw, ArrowRight, Download, Share2, ArrowLeft, Sparkles } from "lucide-react";
+import { Brain, TrendingUp, Award, RefreshCw, ArrowRight, Download, Share2, ArrowLeft, Sparkles, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Bar } from "recharts";
 
+// Import the Store and Service
+import { quizService } from "../../application/quizService";
+import { useQuizStore } from "../../application/quizStore";
+
 export function QuizResults() {
   const navigate = useNavigate();
+  
+  // 1. Get State from Store instead of LocalStorage
+  const { scores, sessionId, isLoading, error } = useQuizStore();
 
-  // Get results from localStorage
-  const storedResults = localStorage.getItem("quizResults");
-  const storedXP = localStorage.getItem("quizXP");
-  const xp = storedXP ? parseInt(storedXP) : 0;
+  // 2. Fetch results if missing (e.g., on page refresh)
+  useEffect(() => {
+    if (!scores && sessionId) {
+      quizService.getFinalResults(sessionId);
+    } else if (!scores && !sessionId) {
+      // If no session exists, redirect to start
+      navigate("/quiz-intro"); 
+    }
+  }, [scores, sessionId, navigate]);
 
-  // Parse RIASEC results
-  const scores = storedResults ? JSON.parse(storedResults) : {
-    R: 18,
-    I: 24,
-    A: 15,
-    S: 12,
-    E: 20,
-    C: 14
-  };
+  if (isLoading || !scores) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-10 h-10 animate-spin text-primary" />
+        <span className="ml-3">Generating your career profile...</span>
+      </div>
+    );
+  }
 
-  // Normalize scores to percentage (max possible is 36 per dimension if all 6 questions rated 6)
-  const maxScore = 36;
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center">
+        <p className="text-red-500 mb-4">{error}</p>
+        <Button onClick={() => navigate("/quiz-intro")}>Try Again</Button>
+      </div>
+    );
+  }
+
+  // 3. Process Data from Python Backend
+  // Backend returns: { dimension_averages: { R: 4.5, ... }, holland_code: "RIA" }
+  
   const radarData = [
-    { type: "Realistic", score: Math.round(scores.R / maxScore * 100) },
-    { type: "Investigative", score: Math.round(scores.I / maxScore * 100) },
-    { type: "Artistic", score: Math.round(scores.A / maxScore * 100) },
-    { type: "Social", score: Math.round(scores.S / maxScore * 100) },
-    { type: "Enterprising", score: Math.round(scores.E / maxScore * 100) },
-    { type: "Conventional", score: Math.round(scores.C / maxScore * 100) }
+    { type: "Realistic", score: Math.round((scores.dimension_averages.R / 5) * 100) },
+    { type: "Investigative", score: Math.round((scores.dimension_averages.I / 5) * 100) },
+    { type: "Artistic", score: Math.round((scores.dimension_averages.A / 5) * 100) },
+    { type: "Social", score: Math.round((scores.dimension_averages.S / 5) * 100) },
+    { type: "Enterprising", score: Math.round((scores.dimension_averages.E / 5) * 100) },
+    { type: "Conventional", score: Math.round((scores.dimension_averages.C / 5) * 100) }
   ];
 
   const barData = radarData.map(item => ({ ...item })).sort((a, b) => b.score - a.score);
-  const topTypes = barData.slice(0, 3);
-  const primaryType = topTypes[0] || barData[0] || { type: "Investigative", score: 0 };
+  
+  // Determine Primary Type
+  const topTypeKey = scores.holland_code[0]; // e.g. "R"
+  const typeMap = { R: "Realistic", I: "Investigative", A: "Artistic", S: "Social", E: "Enterprising", C: "Conventional" };
+  const primaryTypeName = typeMap[topTypeKey];
+  const primaryTypeScore = radarData.find(d => d.type === primaryTypeName)?.score || 0;
 
   const typeDescriptions = {
     Investigative: {
@@ -55,21 +80,32 @@ export function QuizResults() {
       title: "The Doer",
       description: "You like to work with things and tools. You enjoy practical, hands-on work. You're practical, mechanical, and prefer working with objects.",
       careers: ["Engineer", "Architect", "Mechanic", "Pilot", "Chef"]
+    },
+    Artistic: {
+        title: "The Creator",
+        description: "You value self-expression and originality. You enjoy unstructured environments where you can create art, music, or new ideas.",
+        careers: ["Graphic Designer", "Writer", "Musician", "Actor", "Architect"]
+    },
+    Social: {
+        title: "The Helper",
+        description: "You enjoy assisting, teaching, or counseling others. You are empathetic, patient, and skilled at communication.",
+        careers: ["Teacher", "Counselor", "Nurse", "Social Worker", "HR Manager"]
+    },
+    Conventional: {
+        title: "The Organizer",
+        description: "You like structure and order. You enjoy working with data, numbers, and clear procedures.",
+        careers: ["Accountant", "Data Entry", "Financial Analyst", "Librarian", "Banker"]
     }
   };
 
-  const personalityInfo = typeDescriptions[primaryType.type] || typeDescriptions.Investigative;
+  const personalityInfo = typeDescriptions[primaryTypeName] || typeDescriptions.Investigative;
 
   return (
     <div className="min-h-screen bg-muted/30 p-2 sm:p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
-        <Button variant="ghost" onClick={() => window.history.back()} className="mb-4">
+        <Button variant="ghost" onClick={() => navigate("/dashboard")} className="mb-4">
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back
-        </Button>
-        <Button variant="ghost" onClick={() => window.history.back()} className="mb-4">
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back
+          Dashboard
         </Button>
 
         <motion.div
@@ -82,10 +118,10 @@ export function QuizResults() {
           </div>
           <Badge className="mb-4 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-lg px-4 py-2">
             <Sparkles className="w-5 h-5 mr-2" />
-            {xp} XP Earned!
+            Profile Complete
           </Badge>
           <h1 className="text-4xl md:text-5xl font-bold mb-4">Your Career Profile</h1>
-          <p className="text-xl text-muted-foreground">Here's what we learned about your interests and personality</p>
+          <p className="text-xl text-muted-foreground">Based on your Holland Code: <span className="font-bold text-primary">{scores.holland_code}</span></p>
         </motion.div>
 
         <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 }}>
@@ -97,9 +133,9 @@ export function QuizResults() {
                 </div>
                 <div className="flex-1 text-center md:text-left">
                   <Badge className="mb-2 bg-primary">Your Primary Type</Badge>
-                  <h2 className="text-3xl font-bold mb-2">{primaryType.type} - {personalityInfo.title}</h2>
+                  <h2 className="text-3xl font-bold mb-2">{primaryTypeName} - {personalityInfo.title}</h2>
                   <p className="text-muted-foreground mb-4">{personalityInfo.description}</p>
-                  <div className="text-4xl font-bold text-primary">{primaryType.score}% Match</div>
+                  <div className="text-4xl font-bold text-primary">{primaryTypeScore}% Match</div>
                 </div>
               </div>
             </CardContent>
@@ -147,43 +183,6 @@ export function QuizResults() {
           </motion.div>
         </div>
 
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle>Your Top 3 Personality Types</CardTitle>
-              <CardDescription>These are your strongest career orientations</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid md:grid-cols-3 gap-6">
-                {topTypes.map((type, index) => {
-                  const info = typeDescriptions[type.type];
-                  return (
-                    <div
-                      key={index}
-                      className={`p-6 rounded-xl border-2 ${index === 0 ? "border-primary bg-primary/5" : index === 1 ? "border-secondary bg-secondary/5" : "border-accent bg-accent/5"}`}
-                    >
-                      <div className="flex items-center justify-between mb-3">
-                        <Badge variant="outline">#{index + 1}</Badge>
-                        <div className="text-2xl font-bold text-primary">{type.score}%</div>
-                      </div>
-                      <h3 className="text-xl font-bold mb-2">{type.type}</h3>
-                      {info && (
-                        <>
-                          <p className="text-sm text-muted-foreground mb-3">{info.title}</p>
-                          <div className="text-sm">
-                            <div className="font-medium mb-1">Example careers:</div>
-                            <div className="text-muted-foreground">{info.careers.slice(0, 3).join(", ")}</div>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
           <Card className="mb-8 bg-gradient-to-br from-primary/5 to-secondary/5 border-2">
             <CardHeader>
@@ -191,7 +190,7 @@ export function QuizResults() {
                 <TrendingUp className="w-6 h-6 text-primary" />
                 Recommended Career Paths
               </CardTitle>
-              <CardDescription>Based on your {primaryType.type} profile</CardDescription>
+              <CardDescription>Based on your {primaryTypeName} profile</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid md:grid-cols-5 gap-4">
@@ -215,14 +214,6 @@ export function QuizResults() {
           <Button size="lg" variant="outline" className="rounded-xl" onClick={() => navigate("/quiz-intro")}>
             <RefreshCw className="mr-2 w-5 h-5" />
             Retake Quiz
-          </Button>
-          <Button size="lg" variant="outline" className="rounded-xl">
-            <Download className="mr-2 w-5 h-5" />
-            Download Report
-          </Button>
-          <Button size="lg" variant="outline" className="rounded-xl">
-            <Share2 className="mr-2 w-5 h-5" />
-            Share Results
           </Button>
         </div>
       </div>
