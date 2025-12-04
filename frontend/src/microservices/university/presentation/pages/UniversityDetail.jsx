@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
-import { MapPin, Star, Users, ArrowLeft, Brain, Sparkles, Heart, Share2, ExternalLink, MessageSquare } from "lucide-react";
+import { MapPin, Star, Users, ArrowLeft, Brain, Sparkles, Heart, Share2, ExternalLink, MessageSquare, ChevronLeft, ChevronRight } from "lucide-react";
 import { ImageWithFallback } from "@/shared/components/ImageWithFallback";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
@@ -18,6 +18,13 @@ export function UniversityDetail() {
   const [reviews, setReviews] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState(null);
+
+  // Programs Pagination State
+  const [programs, setPrograms] = React.useState([]);
+  const [programsPage, setProgramsPage] = React.useState(1);
+  const [programsTotalPages, setProgramsTotalPages] = React.useState(1);
+  const [programsLoading, setProgramsLoading] = React.useState(false);
+  const PROGRAMS_PER_PAGE = 5;
 
   React.useEffect(() => {
     const loadUniversityData = async () => {
@@ -88,6 +95,27 @@ export function UniversityDetail() {
     loadUniversityData();
   }, [id]);
 
+  // Fetch Programs when page changes or ID changes
+  React.useEffect(() => {
+    const fetchPrograms = async () => {
+      setProgramsLoading(true);
+      try {
+        const res = await fetch(`${API_BASE}/api/universities/${encodeURIComponent(id)}/programs?page=${programsPage}&limit=${PROGRAMS_PER_PAGE}`);
+        if (res.ok) {
+          const data = await res.json();
+          setPrograms(data.programs || []);
+          setProgramsTotalPages(data.totalPages || 1);
+        }
+      } catch (error) {
+        console.error("Failed to fetch programs:", error);
+      } finally {
+        setProgramsLoading(false);
+      }
+    };
+
+    fetchPrograms();
+  }, [id, programsPage]);
+
   // Correct data path: stats.stats
   const sentimentData = (stats?.stats?.rating_breakdown && typeof stats.stats.rating_breakdown === 'object')
     ? Object.entries(stats.stats.rating_breakdown).map(([cat, score]) => ({
@@ -109,6 +137,12 @@ export function UniversityDetail() {
     : null;
 
   const totalReviews = stats?.stats?.total_reviews || 0;
+
+  const handleProgramsPageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= programsTotalPages) {
+      setProgramsPage(newPage);
+    }
+  };
 
   if (loading) {
     return (
@@ -258,23 +292,56 @@ export function UniversityDetail() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      {stats?.university?.programs?.map((prog, i) => (
-                        <div key={i} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                          <div>
-                            <h4 className="font-semibold">{prog.name}</h4>
-                            <div className="flex gap-4 text-sm text-muted-foreground mt-1">
-                              <span>{prog.duration}</span>
-                              <span>•</span>
-                              <span>{prog.feePerSemester ? `PKR ${prog.feePerSemester}/sem` : 'Fee N/A'}</span>
+                      {programsLoading ? (
+                        <div className="text-center py-8">
+                          <div className="animate-spin w-8 h-8 border-4 border-primary rounded-full border-t-transparent mx-auto mb-2" />
+                          <p className="text-muted-foreground">Loading programs...</p>
+                        </div>
+                      ) : (
+                        <>
+                          {programs.map((prog, i) => (
+                            <div key={i} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                              <div>
+                                <h4 className="font-semibold">{prog.name}</h4>
+                                <div className="flex gap-4 text-sm text-muted-foreground mt-1">
+                                  <span>{prog.duration}</span>
+                                  <span>•</span>
+                                  <span>{prog.feePerSemester ? `PKR ${prog.feePerSemester}/sem` : 'Fee N/A'}</span>
+                                </div>
+                              </div>
                             </div>
-                          </div>
-                          <Button variant="outline" size="sm" asChild>
-                            <a href={prog.detailUrl} target="_blank" rel="noopener noreferrer">Details</a>
+                          ))}
+                          {(!programs || programs.length === 0) && (
+                            <p className="text-muted-foreground text-center py-8">No program information available.</p>
+                          )}
+                        </>
+                      )}
+
+                      {/* Pagination Controls */}
+                      {programsTotalPages > 1 && (
+                        <div className="mt-6 flex justify-center items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => handleProgramsPageChange(programsPage - 1)}
+                            disabled={programsPage === 1 || programsLoading}
+                          >
+                            <ChevronLeft className="w-4 h-4" />
+                          </Button>
+
+                          <span className="text-sm font-medium">
+                            Page {programsPage} of {programsTotalPages}
+                          </span>
+
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => handleProgramsPageChange(programsPage + 1)}
+                            disabled={programsPage === programsTotalPages || programsLoading}
+                          >
+                            <ChevronRight className="w-4 h-4" />
                           </Button>
                         </div>
-                      ))}
-                      {(!stats?.university?.programs || stats.university.programs.length === 0) && (
-                        <p className="text-muted-foreground text-center py-8">No program information available.</p>
                       )}
                     </div>
                   </CardContent>
@@ -432,8 +499,8 @@ export function UniversityDetail() {
               </CardContent>
             </Card>
           </div>
-        </div>
-      </div>
-    </div>
+        </div >
+      </div >
+    </div >
   );
 }

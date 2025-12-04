@@ -7,7 +7,7 @@ import { Badge } from "@/shared/components/ui/badge";
 import { Input } from "@/shared/components/ui/input";
 import { Checkbox } from "@/shared/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
-import { Building2, MapPin, DollarSign, Star, TrendingUp, Search, Filter, Heart, ArrowRight, ArrowLeft, Users, Award, Loader2, Brain } from "lucide-react";
+import { Building2, MapPin, DollarSign, Star, TrendingUp, Search, Filter, Heart, ArrowRight, ArrowLeft, Users, Award, Loader2, Brain, ChevronLeft, ChevronRight } from "lucide-react";
 import { ImageWithFallback } from "@/shared/components/ImageWithFallback";
 import { CompareDialog } from "@/shared/components/CompareDialog";
 
@@ -22,11 +22,17 @@ export function UniversityRecommendations() {
   const [universities, setUniversities] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const ITEMS_PER_PAGE = 10;
+
   useEffect(() => {
     const fetchUniversities = async () => {
       try {
         setLoading(true);
-        const response = await fetch('http://localhost:3005/api/universities');
+        const response = await fetch(`http://localhost:3005/api/universities?page=${currentPage}&limit=${ITEMS_PER_PAGE}`);
         if (response.ok) {
           const data = await response.json();
           const mappedUniversities = data.universities.map((uni, index) => ({
@@ -44,6 +50,9 @@ export function UniversityRecommendations() {
             studentsCount: uni.totalStudents ? uni.totalStudents.toLocaleString() : "N/A"
           }));
           setUniversities(mappedUniversities);
+          setTotalPages(data.totalPages || 1);
+          setTotalCount(data.totalCount || 0);
+          setCurrentPage(data.currentPage || 1);
         }
       } catch (error) {
         console.error("Failed to fetch universities:", error);
@@ -54,7 +63,7 @@ export function UniversityRecommendations() {
     };
 
     fetchUniversities();
-  }, []);
+  }, [currentPage]);
 
   // Effect to fetch sentiments if they weren't in the list
   useEffect(() => {
@@ -94,6 +103,13 @@ export function UniversityRecommendations() {
 
   const getSelectedUniversitiesData = () => {
     return universities.filter(uni => selectedUniversities.includes(uni.id));
+  };
+
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   return (
@@ -156,7 +172,7 @@ export function UniversityRecommendations() {
         </Card>
 
         <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-          <p className="text-xs sm:text-sm text-muted-foreground">Showing {filteredUniversities.length} universit{filteredUniversities.length !== 1 ? "ies" : "y"}{selectedUniversities.length > 0 && ` • ${selectedUniversities.length} selected`}</p>
+          <p className="text-xs sm:text-sm text-muted-foreground">Showing {filteredUniversities.length} of {totalCount} universit{totalCount !== 1 ? "ies" : "y"}{selectedUniversities.length > 0 && ` • ${selectedUniversities.length} selected`}</p>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" className="text-xs sm:text-sm" disabled={selectedUniversities.length < 2} onClick={() => setCompareDialogOpen(true)}>
               Compare Selected ({selectedUniversities.length})
@@ -265,6 +281,43 @@ export function UniversityRecommendations() {
             );
           })}
         </div>
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="mt-8 flex justify-center items-center gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </Button>
+
+            <div className="flex items-center gap-1">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <Button
+                  key={page}
+                  variant={currentPage === page ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => handlePageChange(page)}
+                  className="w-8 h-8 p-0"
+                >
+                  {page}
+                </Button>
+              ))}
+            </div>
+
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+            >
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
+        )}
 
         <Card className="mt-8 bg-gradient-to-r from-primary/10 to-secondary/10 border-2">
           <CardContent className="p-6 text-center">
