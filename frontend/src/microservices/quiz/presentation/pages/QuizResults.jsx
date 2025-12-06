@@ -1,5 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/app/providers/AuthProvider";
+import { userProgressService } from "@/shared/services/userProgressService";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
@@ -13,6 +15,7 @@ import { useQuizStore } from "../../application/quizStore";
 
 export function QuizResults() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   
   // 1. Get State from Store instead of LocalStorage
   const { scores, sessionId, isLoading, error } = useQuizStore();
@@ -26,6 +29,19 @@ export function QuizResults() {
       navigate("/quiz-intro"); 
     }
   }, [scores, sessionId, navigate]);
+
+  // 3. Mark quiz as completed when results are loaded
+  useEffect(() => {
+    if (scores && sessionId && user) {
+      const userId = user.id || user.email;
+      userProgressService.markQuizCompleted(userId, {
+        sessionId: sessionId,
+        hollandCode: scores.holland_code,
+        completedAt: new Date().toISOString()
+      });
+      console.log('✅ Quiz completion tracked for user:', userId);
+    }
+  }, [scores, sessionId, user]);
 
   if (isLoading || !scores) {
     return (

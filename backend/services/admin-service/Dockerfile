@@ -1,6 +1,14 @@
 FROM node:18-alpine
+
 WORKDIR /app
+
 COPY package*.json ./
-RUN npm ci --production
+
+# Use npm install because there is no package-lock.json yet
+RUN npm install
+
 COPY . .
-CMD ["node", "dist/index.js"]
+
+EXPOSE 3007
+
+CMD ["npm", "start"]

@@ -7,7 +7,7 @@ import { Button } from "@/shared/components/ui/button";
 import { Star, ArrowLeft, Loader2 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3005';
+const API_BASE = import.meta.env.VITE_API_URL || '';
 
 export function SentimentDashboard() {
   const [loading, setLoading] = useState(true);

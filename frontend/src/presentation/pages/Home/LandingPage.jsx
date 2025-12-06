@@ -4,6 +4,7 @@ import { Button } from "./../../../shared/components/ui/button";
 import { Card } from "./../../../shared/components/ui/card";
 import { ArrowRight, Brain, Target, TrendingUp, Users, Award, Globe } from "lucide-react";
 import { ImageWithFallback } from "./../../../shared/components/ImageWithFallback";
+import landingPageImage from "./../../../shared/assets/landingPageImage.png";
 export function LandingPage() {
   const features = [{
     icon: Brain,
@@ -82,9 +83,9 @@ export function LandingPage() {
             <div className="relative">
               <div className="relative z-10">
                 <ImageWithFallback
-                  src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&h=600&fit=crop"
+                  src={landingPageImage}
                   alt="Students studying"
-                  className="rounded-2xl shadow-2xl"
+                  className=""
                 />
               </div>
 

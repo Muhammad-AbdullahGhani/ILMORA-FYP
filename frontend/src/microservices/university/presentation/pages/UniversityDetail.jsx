@@ -8,7 +8,7 @@ import { MapPin, Star, Users, ArrowLeft, Brain, Sparkles, Heart, Share2, Externa
 import { ImageWithFallback } from "@/shared/components/ImageWithFallback";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
-const API_BASE = "http://localhost:3005";
+const API_BASE = "";
 
 export function UniversityDetail() {
   const { id } = useParams();

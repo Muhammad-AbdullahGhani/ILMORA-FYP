@@ -1,7 +1,77 @@
 import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import morgan from 'morgan';
+import { errorHandler } from './middleware/errorHandler.js';
+import { requestLogger } from './middleware/requestLogger.js';
+import { rateLimiter } from './middleware/rateLimiter.js';
+import apiRoutes from './routes/index.js';
+import { serviceRegistry } from './utils/serviceRegistry.js';
+
 const app = express();
-app.get('/health', (_req, res) => res.json({
-  status: 'ok'
+
+// Security middleware
+app.use(helmet());
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || '*',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+// Body parsing
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Logging
+if (process.env.NODE_ENV !== 'production') {
+  app.use(morgan('dev'));
+}
+app.use(requestLogger);
+
+// Rate limiting
+// app.use(rateLimiter);
+if (process.env.NODE_ENV === 'production') {
+  app.use(rateLimiter);
+} else {
+  console.log('⚠️  Rate limiting disabled in development');
+}
+
+// Health check
+app.get('/health', (_req, res) => {
+  const services = serviceRegistry.getAll();
+  res.json({
+    status: 'ok',
+    gateway: 'healthy',
+    timestamp: new Date().toISOString(),
+    services: Object.keys(services).reduce((acc, key) => {
+      acc[key] = services[key].url;
+      return acc;
+    }, {})
+  });
+});
+
+// API routes
+app.use('/api', apiRoutes);
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({
+    error: 'Route not found',
+    path: req.path,
+    method: req.method
+  });
+});
+
+// Error handling
+app.use(errorHandler);
+
 const port = process.env.PORT || 3000;
-app.listen(port, () => console.log(`gateway listening on ${port}`));
+app.listen(port, () => {
+  console.log(`🚀 API Gateway listening on port ${port}`);
+  console.log(`📡 Registered services:`);
+  const services = serviceRegistry.getAll();
+  Object.keys(services).forEach(key => {
+    console.log(`   - ${key}: ${services[key].url}`);
+  });
+});

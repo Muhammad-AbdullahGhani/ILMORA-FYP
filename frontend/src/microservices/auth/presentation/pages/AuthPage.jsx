@@ -10,11 +10,62 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui
 import { GraduationCap, Mail, Lock, User } from "lucide-react";
 import { ImageWithFallback } from "@/shared/components/ImageWithFallback";
 
+// export function AuthPage() {
+//   const navigate = useNavigate();
+//   const [isLoading, setIsLoading] = useState(false);
+//   const [error, setError] = useState(null);
+//   const auth = useAuth();
+
+//   // form fields
+//   const [loginEmail, setLoginEmail] = useState('');
+//   const [loginPassword, setLoginPassword] = useState('');
+//   const [regName, setRegName] = useState('');
+//   const [regEmail, setRegEmail] = useState('');
+//   const [regPassword, setRegPassword] = useState('');
+//   const [regConfirm, setRegConfirm] = useState('');
+
+//   const handleSubmit = async (e, type) => {
+//     e.preventDefault();
+//     setError(null);
+//     setIsLoading(true);
+
+//     try {
+//       if (type === 'login') {
+//         // FIX 1: Pass an object, not separate strings
+//         await auth.login({ 
+//           email: loginEmail, 
+//           password: loginPassword 
+//         });
+//       } else {
+//         if (regPassword !== regConfirm) throw new Error('Passwords do not match');
+        
+//         // FIX 2: Pass an object here too
+//         await auth.register({
+//           email: regEmail,
+//           password: regPassword,
+//           name: regName
+//         });
+//       }
+//       navigate('/dashboard');
+//     } catch (err) {
+//       console.error("Auth Error:", err); // Added logging for debugging
+//       setError(err.message || 'Authentication failed');
+//     } finally {
+//       setIsLoading(false);
+//     }
+//   };
+
+
 export function AuthPage() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const auth = useAuth();
+
+  // Dual guard system: ref + timestamp
+  const submittingRef = React.useRef(false);
+  const lastSubmitTimeRef = React.useRef(0);
+  const MIN_SUBMIT_INTERVAL = 1000; // 1 second minimum between submissions
 
   // form fields
   const [loginEmail, setLoginEmail] = useState('');
@@ -26,20 +77,39 @@ export function AuthPage() {
 
   const handleSubmit = async (e, type) => {
     e.preventDefault();
+    
+    // GUARD 1: Check if already submitting
+    if (submittingRef.current) {
+      console.warn('⚠️ Submission already in progress, blocked by ref guard');
+      return;
+    }
+
+    // GUARD 2: Check timestamp to prevent rapid submissions
+    const now = Date.now();
+    const timeSinceLastSubmit = now - lastSubmitTimeRef.current;
+    if (timeSinceLastSubmit < MIN_SUBMIT_INTERVAL) {
+      console.warn(`⚠️ Submission blocked: only ${timeSinceLastSubmit}ms since last submit (min: ${MIN_SUBMIT_INTERVAL}ms)`);
+      return;
+    }
+
+    console.log('✅ Submission allowed:', type);
+    
+    submittingRef.current = true;
+    lastSubmitTimeRef.current = now;
     setError(null);
     setIsLoading(true);
 
     try {
       if (type === 'login') {
-        // FIX 1: Pass an object, not separate strings
         await auth.login({ 
           email: loginEmail, 
           password: loginPassword 
         });
       } else {
-        if (regPassword !== regConfirm) throw new Error('Passwords do not match');
+        if (regPassword !== regConfirm) {
+          throw new Error('Passwords do not match');
+        }
         
-        // FIX 2: Pass an object here too
         await auth.register({
           email: regEmail,
           password: regPassword,
@@ -48,10 +118,11 @@ export function AuthPage() {
       }
       navigate('/dashboard');
     } catch (err) {
-      console.error("Auth Error:", err); // Added logging for debugging
+      console.error("Auth Error:", err);
       setError(err.message || 'Authentication failed');
     } finally {
       setIsLoading(false);
+      submittingRef.current = false; // Reset guard
     }
   };
 

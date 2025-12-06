@@ -3,7 +3,7 @@ from ..controllers import quiz_Controller
 # Updated imports to include StartQuizRequest
 from ..models.quiz_schemas import QuizStatus, AnswerSubmission, FinalResults, StartQuizRequest
 
-router = APIRouter(prefix="/quiz", tags=["Quiz"])
+router = APIRouter(prefix="/api/quiz", tags=["Quiz"])
 
 # Updated to accept the JSON body
 @router.post("/start", response_model=QuizStatus)

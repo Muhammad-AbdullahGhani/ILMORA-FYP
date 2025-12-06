@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_UNIVERSITY_SERVICE_URL || 'http://localhost:3005';
+const API_BASE_URL = import.meta.env.VITE_UNIVERSITY_SERVICE_URL || '';
 
 /**
  * Fetch review statistics for a university

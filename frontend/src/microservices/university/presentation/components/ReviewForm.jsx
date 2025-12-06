@@ -56,7 +56,7 @@ export function ReviewForm({ university, city, onSuccess }) {
         setLoading(true);
 
         try {
-            const response = await fetch('http://localhost:3005/api/reviews', {
+            const response = await fetch('/api/reviews', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

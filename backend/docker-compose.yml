@@ -1,28 +1,88 @@
 version: '3.8'
+
 services:
+  # API Gateway - Entry point for all requests
   gateway:
     build: ./services/gateway
     ports:
       - "3000:3000"
+    environment:
+      - PORT=3000
+      - NODE_ENV=production
+      - CORS_ORIGIN=http://localhost:3001
+      - JWT_SECRET=ilm-ora-secret-key-change-in-production-2024
+      - AUTH_SERVICE_URL=http://auth-service:3001
+      - QUIZ_SERVICE_URL=http://quiz-service:3002
+      - RECOMMENDATION_SERVICE_URL=http://recommendation-service:3003
+      - SENTIMENT_SERVICE_URL=http://sentiment-service:3004
+      - UNIVERSITY_SERVICE_URL=http://university-service:3005
+      - CAREER_SERVICE_URL=http://career-service:3006
+      - ADMIN_SERVICE_URL=http://admin-service:3007
+    depends_on:
+      - auth-service
+      - quiz-service
+      - recommendation-service
+      - sentiment-service
+      - university-service
+      - career-service
+      - admin-service
+    networks:
+      - ilm-ora-network
+
+  # Auth Service
   auth-service:
     build: ./services/auth-service
     ports:
       - "3001:3001"
     environment:
+      - PORT=3001
       - MONGO_ENABLED=true
       - MONGO_URI=mongodb://auth-db:27017/auth-db
+      - JWT_SECRET=ilm-ora-secret-key-change-in-production-2024
     depends_on:
       - auth-db
+    networks:
+      - ilm-ora-network
+
   auth-db:
     image: mongo:6.0
     restart: always
     volumes:
       - auth-db-data:/data/db
-    # No host port mapping to avoid conflicts; services use the Docker network
+    networks:
+      - ilm-ora-network
+
+  # Quiz Service
   quiz-service:
     build: ./services/quiz-service
     ports:
       - "3002:3002"
+    environment:
+      - PORT=3002
+    networks:
+      - ilm-ora-network
+
+  # Recommendation Service
+  recommendation-service:
+    build: ./services/recommendation-service
+    ports:
+      - "3003:3003"
+    environment:
+      - PORT=3003
+    networks:
+      - ilm-ora-network
+
+  # Sentiment Service
+  sentiment-service:
+    build: ./services/sentiment-service
+    ports:
+      - "3004:3004"
+    environment:
+      - PORT=3004
+    networks:
+      - ilm-ora-network
+
+  # University Service
   university-service:
     build: ./services/university-service
     ports:
@@ -30,13 +90,56 @@ services:
     environment:
       - PORT=3005
       - MONGO_URI=mongodb://university-db:27017/ilm-ora-university
+      - PYTHON_SENTIMENT_URL=http://python-sentiment-service:5000
+    volumes:
+      - ./shared:/app/shared:ro
     depends_on:
       - university-db
+      - python-sentiment-service
+    networks:
+      - ilm-ora-network
+
   university-db:
     image: mongo:6.0
     restart: always
     volumes:
       - university-db-data:/data/db
+    networks:
+      - ilm-ora-network
+
+  # Python Sentiment Service
+  python-sentiment-service:
+    build: ./services/university-service/scripts
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+    networks:
+      - ilm-ora-network
+
+  # Career Service
+  career-service:
+    build: ./services/career-service
+    ports:
+      - "3006:3006"
+    environment:
+      - PORT=3006
+    networks:
+      - ilm-ora-network
+
+  # Admin Service
+  admin-service:
+    build: ./services/admin-service
+    ports:
+      - "3007:3007"
+    environment:
+      - PORT=3007
+    networks:
+      - ilm-ora-network
+
+networks:
+  ilm-ora-network:
+    driver: bridge
 
 volumes:
   auth-db-data:

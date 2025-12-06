@@ -74,18 +74,14 @@ export default defineConfig({
     }]
   },
   server: {
-    port: 3000,
+    port: 3001,
     open: true,
     proxy: {
-       '/api/recommend': {
-    target: 'http://127.0.0.1:8001',
-    changeOrigin: true
-    },
+      // Route all API requests through the gateway
       '/api': {
-        target: 'http://127.0.0.1:8000',
+        target: 'http://localhost:3000',
         changeOrigin: true,
-        secure: false,
-        rewrite: path => path.replace(/^\/api/, '')
+        secure: false
       }
     }
   }

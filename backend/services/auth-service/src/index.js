@@ -22,7 +22,7 @@ app.get('/health', (_req, res) => res.json({
 
 // Mount auth routes under /api/auth
 app.use('/api/auth', authRouter);
-const port = process.env.PORT || 3001;
+const port = process.env.PORT || 3008;
 const start = async () => {
   try {
     // If Mongo is enabled or a URI is present, attempt connection first

@@ -1,6 +1,8 @@
 import React from 'react';
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/app/providers/AuthProvider";
+import { userProgressService } from "@/shared/services/userProgressService";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
@@ -10,8 +12,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Building2, MapPin, DollarSign, Star, TrendingUp, Search, Filter, Heart, ArrowRight, ArrowLeft, Users, Award, Loader2, Brain, ChevronLeft, ChevronRight } from "lucide-react";
 import { ImageWithFallback } from "@/shared/components/ImageWithFallback";
 import { CompareDialog } from "@/shared/components/CompareDialog";
+import { getUniversityImage } from "@/shared/utils/universityImages";
 
 export function UniversityRecommendations() {
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [cityFilter, setCityFilter] = useState("all");
   const [selectedUniversities, setSelectedUniversities] = useState([]);
@@ -28,27 +32,41 @@ export function UniversityRecommendations() {
   const [totalCount, setTotalCount] = useState(0);
   const ITEMS_PER_PAGE = 10;
 
+  // Mark university insights as viewed when component mounts
+  useEffect(() => {
+    if (user) {
+      const userId = user.id || user.email;
+      userProgressService.markUniversityInsightsViewed(userId);
+      console.log('✅ University insights view tracked for user:', userId);
+    }
+  }, [user]);
+
   useEffect(() => {
     const fetchUniversities = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`http://localhost:3005/api/universities?page=${currentPage}&limit=${ITEMS_PER_PAGE}`);
+        const response = await fetch(`/api/universities?page=${currentPage}&limit=${ITEMS_PER_PAGE}`);
         if (response.ok) {
           const data = await response.json();
-          const mappedUniversities = data.universities.map((uni, index) => ({
-            id: uni._id || index,
-            name: uni.name,
-            apiName: uni.apiName || uni.name,
-            location: uni.location || "Pakistan",
-            country: "Pakistan",
-            image: uni.image || "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=2070",
-            tuitionFee: "PKR 150,000/sem", // Placeholder
-            match: 85 + (index % 15), // Mock match score
-            ranking: `#${index + 1} in Region`,
-            accreditation: uni.affiliation || "HEC Recognized",
-            programsOffered: ["Computer Science", "Business", "Engineering"], // Placeholder
-            studentsCount: uni.totalStudents ? uni.totalStudents.toLocaleString() : "N/A"
-          }));
+          const mappedUniversities = data.universities.map((uni, index) => {
+            // Get image using utility - tries apiName first, then name, then fallback
+            const universityImage = getUniversityImage(uni.apiName || uni.name, "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=2070");
+            
+            return {
+              id: uni._id || index,
+              name: uni.name,
+              apiName: uni.apiName || uni.name,
+              location: uni.location || "Pakistan",
+              country: "Pakistan",
+              image: universityImage,
+              tuitionFee: "PKR 150,000/sem", // Placeholder
+              match: 85 + (index % 15), // Mock match score
+              ranking: `#${index + 1} in Region`,
+              accreditation: uni.affiliation || "HEC Recognized",
+              programsOffered: ["Computer Science", "Business", "Engineering"], // Placeholder
+              studentsCount: uni.totalStudents ? uni.totalStudents.toLocaleString() : "N/A"
+            };
+          });
           setUniversities(mappedUniversities);
           setTotalPages(data.totalPages || 1);
           setTotalCount(data.totalCount || 0);
@@ -73,7 +91,7 @@ export function UniversityRecommendations() {
       const ratings = {};
       for (const uni of universities) {
         try {
-          const res = await fetch(`http://localhost:3005/api/reviews/${uni.apiName}/stats`);
+          const res = await fetch(`/api/reviews/${uni.apiName}/stats`);
           if (res.ok) {
             const data = await res.json();
             ratings[uni.id] = data.stats?.overallRating || 0;

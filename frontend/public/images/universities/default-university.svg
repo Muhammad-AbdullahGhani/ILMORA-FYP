@@ -1,0 +1,13 @@
+<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="400" height="300" fill="url(#grad)"/>
+  <text x="200" y="130" font-family="Arial, sans-serif" font-size="24" fill="white" text-anchor="middle" font-weight="bold">University</text>
+  <text x="200" y="170" font-family="Arial, sans-serif" font-size="18" fill="white" text-anchor="middle" opacity="0.8">Image Placeholder</text>
+  <circle cx="200" cy="220" r="30" fill="none" stroke="white" stroke-width="3" opacity="0.6"/>
+  <path d="M 200 200 L 190 230 M 200 200 L 210 230" stroke="white" stroke-width="3" stroke-linecap="round" opacity="0.6"/>
+</svg>

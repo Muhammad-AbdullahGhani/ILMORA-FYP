@@ -4,7 +4,7 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"dev": "node --watch src/index.js",
-		"start": "node src/index.js"
+		"dev": "uvicorn src.main:app --reload --port 3002",
+		"start": "uvicorn src.main:app --port 3002"
 	}
 }
