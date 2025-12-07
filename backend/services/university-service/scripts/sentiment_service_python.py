@@ -17,19 +17,30 @@ MODEL_NAME = "AbdullahGhani/Unidatamodel"  # Your Hugging Face model
 # Load model and tokenizer
 print("Loading model from Hugging Face...")
 try:
+    # Check for GPU availability
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"Using device: {device}")
+    
     tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
     model = AutoModelForSequenceClassification.from_pretrained(
         MODEL_NAME,
         num_labels=1,
         problem_type="regression"
     )
+    model.to(device)
     model.eval()
+    
+    # Set to inference mode for better performance
+    if hasattr(torch, 'inference_mode'):
+        torch.set_grad_enabled(False)
+    
     print("✓ Model loaded successfully!")
 except Exception as e:
     print(f"Error loading model: {e}")
     print("Please ensure the model files are not corrupted")
     model = None
     tokenizer = None
+    device = None
 
 # Factor mapping
 FACTOR_MAP = {
@@ -78,6 +89,10 @@ def predict_rating(review_text, factor, university, city):
         max_length=256
     )
     
+    # Move inputs to device
+    if device:
+        inputs = {k: v.to(device) for k, v in inputs.items()}
+    
     # Predict
     with torch.no_grad():
         outputs = model(**inputs)
@@ -120,7 +135,7 @@ def predict():
 
 @app.route('/predict/batch', methods=['POST'])
 def predict_batch():
-    """Predict ratings for multiple reviews"""
+    """Predict ratings for multiple reviews (batch processing)"""
     try:
         data = request.json
         reviews = data.get('reviews', [])
@@ -128,15 +143,44 @@ def predict_batch():
         if not reviews:
             return jsonify({'error': 'reviews array is required'}), 400
         
-        predictions = []
+        if model is None or tokenizer is None:
+            raise Exception("Model not loaded")
+        
+        # Format all inputs
+        input_texts = []
         for review in reviews:
-            rating = predict_rating(
-                review.get('review_text', ''),
-                review.get('factor', 'General'),
-                review.get('university', ''),
-                review.get('city', '')
-            )
-            predictions.append(rating)
+            factor_norm = normalize_factor(review.get('factor', 'General'))
+            university = review.get('university', '')
+            city = review.get('city', '')
+            review_text = review.get('review_text', '')
+            input_text = f"[{factor_norm}] ({university}, {city}): {review_text}"
+            input_texts.append(input_text)
+        
+        # Batch tokenize all reviews at once
+        inputs = tokenizer(
+            input_texts,
+            return_tensors="pt",
+            truncation=True,
+            max_length=256,
+            padding=True
+        )
+        
+        # Move inputs to device (GPU if available)
+        if device:
+            inputs = {k: v.to(device) for k, v in inputs.items()}
+        
+        # Batch predict all reviews at once
+        with torch.no_grad():
+            outputs = model(**inputs)
+            predictions_raw = outputs.logits.squeeze(-1).cpu().tolist()
+        
+        # Handle single prediction (not a list)
+        if not isinstance(predictions_raw, list):
+            predictions_raw = [predictions_raw]
+        
+        # Clip to 1-5 range and round
+        predictions = [max(1.0, min(5.0, pred)) for pred in predictions_raw]
+        predictions = [round(pred, 2) for pred in predictions]
         
         # Calculate statistics
         factor_groups = {}

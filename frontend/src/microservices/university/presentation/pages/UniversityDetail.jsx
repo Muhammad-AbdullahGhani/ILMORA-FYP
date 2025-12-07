@@ -288,8 +288,8 @@ export function UniversityDetail() {
   return (
     <div className="min-h-screen bg-muted/30">
       {/* Back Button */}
-      <Button variant="secondary" onClick={() => window.history.back()} className="absolute top-20 right-8 z-50 shadow-lg">
-        <ArrowLeft className="w-4 h-4 mr-2" /> Back
+      <Button variant="secondary" size="icon" onClick={() => window.history.back()} className="absolute top-24 right-8 z-50 shadow-lg rounded-full">
+        <ArrowLeft className="w-5 h-5" />
       </Button>
 
       {/* Hero Section */}

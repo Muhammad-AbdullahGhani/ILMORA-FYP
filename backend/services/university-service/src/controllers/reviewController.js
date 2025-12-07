@@ -101,14 +101,41 @@ export const getReviewsByUniversity = async (req, res) => {
 
         // Only run AI prediction if there are reviews
         if (rawReviews.length > 0) {
-            const ratings = await predictBatch(
-                rawReviews.map(r => ({
-                    review_text: r.reviewText || r.review_text || '',
-                    factor: r.factor || 'General',
-                    university: r.university || university,
-                    city: r.city || 'Pakistan'
-                }))
-            );
+            // Check for cached predictions first
+            const escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const sanitizedName = escapeRegExp(university).replace(/[\s\-]+/g, '[\\s\\-]+');
+            
+            const universityDoc = await University.findOne({
+                $or: [
+                    { name: { $regex: new RegExp(`^${sanitizedName}$`, 'i') } },
+                    { apiName: { $regex: new RegExp(`^${sanitizedName}$`, 'i') } }
+                ]
+            });
+
+            // Check if cache is valid (less than 24 hours old)
+            const CACHE_DURATION_MS = 24 * 60 * 60 * 1000;
+            const now = new Date();
+            const cacheIsValid = universityDoc?.cachedSentiment?.lastAnalyzed &&
+                (now - new Date(universityDoc.cachedSentiment.lastAnalyzed)) < CACHE_DURATION_MS &&
+                universityDoc.cachedSentiment.predictions?.length > 0;
+
+            let ratings;
+            if (cacheIsValid) {
+                // Use cached predictions (assumes same sort order as when cached)
+                console.log(`[REVIEWS] ✅ Using cached predictions for ${university}`);
+                ratings = universityDoc.cachedSentiment.predictions;
+            } else {
+                // Compute fresh predictions
+                console.log(`[REVIEWS] 🔄 Computing fresh predictions for ${university}`);
+                ratings = await predictBatch(
+                    rawReviews.map(r => ({
+                        review_text: r.reviewText || r.review_text || '',
+                        factor: r.factor || 'General',
+                        university: r.university || university,
+                        city: r.city || 'Pakistan'
+                    }))
+                );
+            }
 
             reviews = rawReviews.map((review, i) => {
                 let cleanText = (review.reviewText || review.review_text || '').trim();
@@ -206,10 +233,10 @@ export const getReviewStats = async (req, res) => {
             });
         }
 
-        // Limit to latest 50 reviews for AI analysis to prevent timeouts
+        // Limit to latest 30 reviews for AI analysis to prevent timeouts
         const reviews = await Review.find(query)
             .sort({ createdAt: -1 })
-            .limit(50)
+            .limit(30)
             .lean();
 
         console.log(`[STATS] 🔄 Cache miss or expired. Analyzing ${reviews.length} reviews...`);
