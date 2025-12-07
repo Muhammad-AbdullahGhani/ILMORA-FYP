@@ -77,6 +77,11 @@ export default defineConfig({
     port: 3001,
     open: true,
     proxy: {
+      '/api/recommend': {
+        target: 'http://localhost:3003',
+        changeOrigin: true,
+        secure: false
+      },
       // Route all API requests through the gateway
       '/api': {
         target: 'http://localhost:3000',

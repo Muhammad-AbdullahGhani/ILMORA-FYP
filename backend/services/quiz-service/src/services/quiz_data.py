@@ -88,4 +88,5 @@ def get_initial_state() -> Dict[str, Any]:
         'baseline_sequence': baseline_seq,
         'pools': user_pools,
         'exploit_index': 0,
+        'answer_history': [],  # NEW: Track answers for back navigation
     }

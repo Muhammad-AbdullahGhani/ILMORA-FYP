@@ -59,6 +59,11 @@ export const useQuizStore = create((set) => ({
         // Note: The actual score and average calculation happens on the backend.
     })),
 
+    // NEW ACTION: Remove last answer from history (for back button)
+    removeLastAnswer: () => set((state) => ({
+        history: state.history.slice(0, -1),
+    })),
+
     // NEW ACTION: Mark as complete
     setComplete: (isComplete) => set({
         isComplete: isComplete,

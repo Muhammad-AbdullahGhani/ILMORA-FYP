@@ -28,19 +28,26 @@ export const careerService = {
   /**
    * Search careers
    */
-  async search(filters) {
+  async search(query) {
     try {
-      const all = await this.getAll();
-      return all.filter(career => {
-        if (filters.industry && career.industry !== filters.industry) return false;
-        if (filters.experienceLevel && career.experienceLevel !== filters.experienceLevel) return false;
-        if (filters.minSalary && career.salary.min < filters.minSalary) return false;
-        if (filters.demand && career.demand !== filters.demand) return false;
-        return true;
-      });
+      const response = await careerAPI.search(query || '');
+      return response.data.careers || [];
     } catch (error) {
       console.error("Failed to search careers:", error);
       return [];
+    }
+  },
+  
+  /**
+   * Get salary statistics
+   */
+  async getStats() {
+    try {
+      const response = await careerAPI.getStats();
+      return response.data.stats || null;
+    } catch (error) {
+      console.error("Failed to fetch stats:", error);
+      return null;
     }
   },
   /**

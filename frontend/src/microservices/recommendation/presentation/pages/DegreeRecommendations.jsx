@@ -36,6 +36,12 @@ export function DegreeRecommendations() {
     if (user) {
       const userId = user.id || user.email;
       userProgressService.markDegreeRecommendationsViewed(userId);
+      userProgressService.logActivity(userId, {
+        type: 'degrees_viewed',
+        description: 'Explored Degree Recommendations',
+        icon: 'GraduationCap',
+        color: 'text-purple-500'
+      });
       console.log('✅ Degree recommendations view tracked for user:', userId);
     }
   }, [user]);
@@ -76,7 +82,7 @@ export function DegreeRecommendations() {
 
         // Call the Recommendation Microservice
         // Ensure your vite.config.js proxies /api -> localhost:3003
-        const response = await axiosClient.post("api/recommend/degrees", payload);
+        const response = await axiosClient.post("/recommend/degrees", payload);
         
         setRecommendations(response.data);
       } catch (err) {

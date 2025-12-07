@@ -1,6 +1,8 @@
 import React from 'react';
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/app/providers/AuthProvider";
+import { userProgressService } from "@/shared/services/userProgressService";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { Progress } from "@/shared/components/ui/progress";
@@ -9,7 +11,21 @@ import { Brain, Clock, Target, Lightbulb, Users, Wrench, Briefcase, Palette, Use
 import { motion } from "framer-motion";
 export function QuizIntro() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [showDetails, setShowDetails] = useState(false);
+  
+  const handleStartQuiz = () => {
+    if (user) {
+      const userId = user.id || user.email;
+      userProgressService.logActivity(userId, {
+        type: 'quiz_started',
+        description: 'Started Career Assessment Quiz',
+        icon: 'ClipboardList',
+        color: 'text-blue-500'
+      });
+    }
+    navigate('/quiz');
+  };
   const riasecTypes = [{
     icon: Wrench,
     title: "Realistic",
@@ -171,7 +187,7 @@ export function QuizIntro() {
   }, /*#__PURE__*/React.createElement(Button, {
     size: "lg",
     className: "flex-1 bg-primary hover:bg-primary/90 rounded-xl shadow-lg hover:shadow-xl transition-all hover:scale-105",
-    onClick: () => navigate("/quiz")
+    onClick: handleStartQuiz
   }, "Start Quiz Now"), /*#__PURE__*/React.createElement(Button, {
     size: "lg",
     variant: "outline",

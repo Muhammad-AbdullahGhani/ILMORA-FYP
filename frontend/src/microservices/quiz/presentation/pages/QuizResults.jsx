@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/app/providers/AuthProvider";
 import { userProgressService } from "@/shared/services/userProgressService";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/shared/components/ui/card";
@@ -12,23 +12,32 @@ import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadius
 // Import the Store and Service
 import { quizService } from "../../application/quizService";
 import { useQuizStore } from "../../application/quizStore";
+import { careerService } from "../../../career/application/careerService";
 
 export function QuizResults() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
   
   // 1. Get State from Store instead of LocalStorage
-  const { scores, sessionId, isLoading, error } = useQuizStore();
+  const { scores, sessionId, isLoading, error, studentBackground } = useQuizStore();
+  
+  // State for recommended careers
+  const [recommendedCareers, setRecommendedCareers] = useState([]);
 
-  // 2. Fetch results if missing (e.g., on page refresh)
+  // 2. Fetch results if missing (e.g., on page refresh or viewing from history)
   useEffect(() => {
-    if (!scores && sessionId) {
-      quizService.getFinalResults(sessionId);
-    } else if (!scores && !sessionId) {
+    // Check if session ID is provided in URL params (from quiz history)
+    const urlSessionId = searchParams.get('session');
+    const targetSessionId = urlSessionId || sessionId;
+    
+    if (!scores && targetSessionId) {
+      quizService.getFinalResults(targetSessionId);
+    } else if (!scores && !targetSessionId) {
       // If no session exists, redirect to start
       navigate("/quiz-intro"); 
     }
-  }, [scores, sessionId, navigate]);
+  }, [scores, sessionId, searchParams, navigate]);
 
   // 3. Mark quiz as completed when results are loaded
   useEffect(() => {
@@ -39,9 +48,114 @@ export function QuizResults() {
         hollandCode: scores.holland_code,
         completedAt: new Date().toISOString()
       });
+      userProgressService.logActivity(userId, {
+        type: 'quiz_completed',
+        description: 'Completed Career Assessment Quiz',
+        icon: 'CheckCircle',
+        color: 'text-green-500'
+      });
       console.log('✅ Quiz completion tracked for user:', userId);
     }
   }, [scores, sessionId, user]);
+
+  // 4. Fetch recommended careers based on Holland code and student background
+  useEffect(() => {
+    async function fetchRecommendedCareers() {
+      if (!scores || !scores.holland_code) return;
+
+      try {
+        const data = await careerService.getAll();
+        const allCareers = data.careers || data || [];
+        
+        // Map Holland codes to career keywords
+        const hollandCareerMap = {
+          R: ['engineer', 'mechanic', 'pilot', 'architect', 'technician', 'electrician', 'carpenter', 'plumber'],
+          I: ['scientist', 'researcher', 'analyst', 'data', 'laboratory', 'pharmacist', 'doctor', 'physician', 'surgeon'],
+          A: ['designer', 'artist', 'writer', 'musician', 'creative', 'graphic', 'ui', 'ux', 'photographer'],
+          S: ['teacher', 'nurse', 'counselor', 'social worker', 'hr', 'human resource', 'therapist', 'coach'],
+          E: ['manager', 'director', 'executive', 'entrepreneur', 'sales', 'marketing', 'ceo', 'business', 'consultant'],
+          C: ['accountant', 'clerk', 'administrator', 'finance', 'banking', 'auditor', 'bookkeeper', 'secretary']
+        };
+
+        // Define medical field keywords to filter out
+        const medicalKeywords = ['doctor', 'physician', 'surgeon', 'medical', 'medicine', 'healthcare', 'clinical', 'nurse', 'pharmacist'];
+        
+        // Define engineering keywords to filter out
+        const engineeringKeywords = ['engineer', 'engineering', 'mechanic', 'technician', 'electrician'];
+
+        // Get student's background
+        const userGroup = studentBackground?.group?.toLowerCase() || '';
+        
+        // Determine what to filter based on background
+        let shouldFilterMedical = false;
+        let shouldFilterEngineering = false;
+        
+        // If NOT Pre-Medical background, exclude medical careers
+        if (userGroup && !userGroup.includes('pre-medical') && !userGroup.includes('pre medical')) {
+          shouldFilterMedical = true;
+        }
+        
+        // If ICS or ICOM background, exclude both engineering and medical
+        if (userGroup && (userGroup.includes('ics') || userGroup.includes('i.c.s') || 
+            userGroup.includes('icom') || userGroup.includes('i.com'))) {
+          shouldFilterMedical = true;
+          shouldFilterEngineering = true;
+        }
+
+        // Get top 3 Holland codes
+        const primaryCode = scores.holland_code[0];
+        const secondaryCode = scores.holland_code[1] || '';
+        const tertiaryCode = scores.holland_code[2] || '';
+
+        // Get keywords for the top codes
+        const primaryKeywords = hollandCareerMap[primaryCode] || [];
+        const secondaryKeywords = hollandCareerMap[secondaryCode] || [];
+        const tertiaryKeywords = hollandCareerMap[tertiaryCode] || [];
+
+        // Filter and score careers
+        const scoredCareers = allCareers.map(career => {
+          const title = career.job_title.toLowerCase();
+          let score = 0;
+
+          // Apply background-based filtering
+          if (shouldFilterMedical && medicalKeywords.some(keyword => title.includes(keyword))) {
+            return { ...career, matchScore: 0 }; // Exclude medical careers
+          }
+          
+          if (shouldFilterEngineering && engineeringKeywords.some(keyword => title.includes(keyword))) {
+            return { ...career, matchScore: 0 }; // Exclude engineering careers
+          }
+
+          // Check primary code matches (highest priority)
+          if (primaryKeywords.some(keyword => title.includes(keyword))) {
+            score += 3;
+          }
+          // Check secondary code matches
+          if (secondaryKeywords.some(keyword => title.includes(keyword))) {
+            score += 2;
+          }
+          // Check tertiary code matches
+          if (tertiaryKeywords.some(keyword => title.includes(keyword))) {
+            score += 1;
+          }
+
+          return { ...career, matchScore: score };
+        });
+
+        // Filter careers with score > 0 and sort by score
+        const matchedCareers = scoredCareers
+          .filter(career => career.matchScore > 0)
+          .sort((a, b) => b.matchScore - a.matchScore)
+          .slice(0, 5); // Get top 5
+
+        setRecommendedCareers(matchedCareers);
+      } catch (error) {
+        console.error('Failed to fetch recommended careers:', error);
+      }
+    }
+
+    fetchRecommendedCareers();
+  }, [scores, studentBackground]);
 
   if (isLoading || !scores) {
     return (
@@ -206,17 +320,27 @@ export function QuizResults() {
                 <TrendingUp className="w-6 h-6 text-primary" />
                 Recommended Career Paths
               </CardTitle>
-              <CardDescription>Based on your {primaryTypeName} profile</CardDescription>
+              <CardDescription>
+                Based on your {primaryTypeName} profile {recommendedCareers.length > 0 ? `(${scores.holland_code})` : ''}
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid md:grid-cols-5 gap-4">
-                {personalityInfo.careers.map((career, index) => (
-                  <div key={index} className="p-4 bg-card rounded-xl border-2 border-border hover:border-primary/50 transition-all text-center">
-                    <div className="text-2xl mb-2">💼</div>
-                    <div className="font-medium">{career}</div>
-                  </div>
-                ))}
-              </div>
+              {recommendedCareers.length > 0 ? (
+                <div className="grid md:grid-cols-5 gap-4">
+                  {recommendedCareers.map((career, index) => (
+                    <div key={index} className="p-4 bg-card rounded-xl border-2 border-border hover:border-primary/50 transition-all cursor-pointer group">
+                      <div className="text-2xl mb-2">💼</div>
+                      <div className="font-medium text-sm mb-2">{career.job_title}</div>
+                      <div className="text-xs text-muted-foreground">{career.median_salary}</div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2 text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground">Finding your perfect career matches...</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </motion.div>

@@ -7,6 +7,10 @@ import universityRoutes from './universityRoutes.js';
 import careerRoutes from './careerRoutes.js';
 import adminRoutes from './adminRoutes.js';
 import reviewRoutes from './reviewRoutes.js';
+import contactRoutes from './contactRoutes.js';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const router = Router();
 
@@ -14,11 +18,13 @@ const router = Router();
 router.use('/auth', authRoutes);
 router.use('/quiz', quizRoutes);
 router.use('/recommendations', recommendationRoutes);
+router.use('/recommend', recommendationRoutes); // Add alias for Python service route
 router.use('/sentiment', sentimentRoutes);
 router.use('/universities', universityRoutes);
 router.use('/reviews', reviewRoutes);
 router.use('/careers', careerRoutes);
 router.use('/admin', adminRoutes);
+router.use('/contact', contactRoutes);
 
 // API info endpoint
 router.get('/', (req, res) => {

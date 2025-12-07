@@ -124,7 +124,8 @@ export const userProgressService = {
       degreeRecommendationsViewedAt: null,
       universityInsightsViewed: false,
       universityInsightsViewedAt: null,
-      lastUpdated: null
+      lastUpdated: null,
+      activityLog: []
     };
   },
 
@@ -137,5 +138,59 @@ export const userProgressService = {
     const progress = this.getProgress(userId);
     const updatedProgress = { ...progress, ...updates };
     this.saveProgress(userId, updatedProgress);
+  },
+
+  /**
+   * Log a user activity
+   * @param {string} userId - User ID
+   * @param {Object} activity - Activity data { type, description, icon, color }
+   */
+  logActivity(userId, activity) {
+    if (!userId) return;
+    
+    const progress = this.getProgress(userId);
+    const activityLog = progress.activityLog || [];
+    
+    const newActivity = {
+      id: Date.now(),
+      timestamp: new Date().toISOString(),
+      type: activity.type,
+      description: activity.description,
+      icon: activity.icon || 'Activity',
+      color: activity.color || 'text-blue-500'
+    };
+    
+    // Add to beginning of array and keep only last 20 activities
+    activityLog.unshift(newActivity);
+    progress.activityLog = activityLog.slice(0, 20);
+    
+    this.saveProgress(userId, progress);
+  },
+
+  /**
+   * Get recent activities for a user
+   * @param {string} userId - User ID
+   * @param {number} limit - Maximum number of activities to return
+   * @returns {Array} Recent activities
+   */
+  getRecentActivities(userId, limit = 10) {
+    if (!userId) return [];
+    
+    const progress = this.getProgress(userId);
+    const activities = progress.activityLog || [];
+    
+    return activities.slice(0, limit);
+  },
+
+  /**
+   * Clear activity log
+   * @param {string} userId - User ID
+   */
+  clearActivityLog(userId) {
+    if (!userId) return;
+    
+    const progress = this.getProgress(userId);
+    progress.activityLog = [];
+    this.saveProgress(userId, progress);
   }
 };

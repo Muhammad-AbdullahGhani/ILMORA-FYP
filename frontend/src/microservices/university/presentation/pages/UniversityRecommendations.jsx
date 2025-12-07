@@ -9,7 +9,7 @@ import { Badge } from "@/shared/components/ui/badge";
 import { Input } from "@/shared/components/ui/input";
 import { Checkbox } from "@/shared/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
-import { Building2, MapPin, DollarSign, Star, TrendingUp, Search, Filter, Heart, ArrowRight, ArrowLeft, Users, Award, Loader2, Brain, ChevronLeft, ChevronRight } from "lucide-react";
+import { Building2, MapPin, Banknote, Star, TrendingUp, Search, Filter, Heart, ArrowRight, ArrowLeft, Users, Award, Loader2, Brain, ChevronLeft, ChevronRight } from "lucide-react";
 import { ImageWithFallback } from "@/shared/components/ImageWithFallback";
 import { CompareDialog } from "@/shared/components/CompareDialog";
 import { getUniversityImage } from "@/shared/utils/universityImages";
@@ -37,6 +37,12 @@ export function UniversityRecommendations() {
     if (user) {
       const userId = user.id || user.email;
       userProgressService.markUniversityInsightsViewed(userId);
+      userProgressService.logActivity(userId, {
+        type: 'universities_viewed',
+        description: 'Explored University Recommendations',
+        icon: 'Building2',
+        color: 'text-orange-500'
+      });
       console.log('✅ University insights view tracked for user:', userId);
     }
   }, [user]);
@@ -237,7 +243,7 @@ export function UniversityRecommendations() {
 
                         <div className="grid md:grid-cols-2 gap-4 mb-4">
                           <div className="flex items-center gap-2">
-                            <DollarSign className="w-5 h-5 text-green-600" />
+                            <Banknote className="w-5 h-5 text-green-600" />
                             <div>
                               <div className="text-sm text-muted-foreground">Tuition Fee</div>
                               <div className="font-medium">{university.tuitionFee}</div>

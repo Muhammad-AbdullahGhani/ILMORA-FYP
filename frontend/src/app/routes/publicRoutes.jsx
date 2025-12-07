@@ -7,6 +7,7 @@ import { Dashboard } from "@/presentation/pages/Dashboard/Dashboard";
 import { QuizIntro } from "@/microservices/quiz/presentation/pages/QuizIntro";
 import { QuizQuestions } from "@/microservices/quiz/presentation/pages/QuizQuestions";
 import { QuizResults } from "@/microservices/quiz/presentation/pages/QuizResults";
+import { QuizHistory } from "@/microservices/quiz/presentation/pages/QuizHistory";
 import { DegreeRecommendations } from "@/microservices/recommendation/presentation/pages/DegreeRecommendations";
 import { UniversityRecommendations } from "@/microservices/university/presentation/pages/UniversityRecommendations";
 import { UniversityDetail } from "@/microservices/university/presentation/pages/UniversityDetail";
@@ -38,6 +39,9 @@ export const publicRoutes = [{
 }, {
   path: "/quiz-results",
   element: <QuizResults />
+}, {
+  path: "/quiz-history",
+  element: <QuizHistory />
 }, {
   path: "/degrees",
   element: <DegreeRecommendations />

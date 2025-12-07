@@ -1,14 +1,12 @@
 import { axiosClient } from "@/shared/utils/axiosClient";
 
 export const quizAPI = {
-  /**
-   * Starts a new adaptive session.
-   * Payload: { background: { level: '...', group: '...' } }
-   * Returns: { session_id, next_question, ... }
-   */
-  startQuiz: (payload) => axiosClient.post("/quiz/start", payload),
-
-  /**
+  /**
+   * Starts a new adaptive session or resumes existing one.
+   * Payload: { background: { level, group }, user_id }
+   * Returns: { session_id, next_question, can_go_back, ... }
+   */
+  startQuiz: (payload) => axiosClient.post("/quiz/start", payload),  /**
    * Submits one answer and gets the NEXT question.
    * Payload: { session_id, question_id, dimension, score }
    */
@@ -20,8 +18,18 @@ export const quizAPI = {
   getResults: (sessionId) => axiosClient.get(`/quiz/results/${sessionId}`),
 
   /**
-   * Triggers an early finish on the backend and retrieves final results.
-   * We assume the backend uses a GET endpoint for this, similar to results.
+   * Go back to previous question
+   * Payload: { session_id }
    */
-  finishQuizEarly: (sessionId) => axiosClient.get(`/quiz/finish/${sessionId}`),
+  goBack: (payload) => axiosClient.post("/quiz/back", payload),
+
+  /**
+   * Force finish quiz early and get results.
+   */
+  finishQuizEarly: (sessionId) => axiosClient.post(`/quiz/finish/${sessionId}`),
+
+  /**
+   * Get user's quiz history
+   */
+  getUserHistory: (userId) => axiosClient.get(`/quiz/history/${userId}`),
 };

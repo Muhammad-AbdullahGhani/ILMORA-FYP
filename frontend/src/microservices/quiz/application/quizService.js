@@ -8,17 +8,16 @@ export const quizService = {
    * Step 1: Start the Adaptive Quiz
    * NOTE: Now accepts the student background data from the form.
    */
-  async startQuiz(background) { // MUST accept background data here
-    const store = useQuizStore.getState();
-    store.setLoading(true);
-    store.reset(); // Clear old data
+  async startQuiz(background, userId) { // Accept background and userId
+    const store = useQuizStore.getState();
+    store.setLoading(true);
+    store.reset(); // Clear old data
 
     // Construct the payload required by the backend
     const payload = {
-        background: background // e.g., { level: 'Intermediate', group: 'Pre-Engineering' }
-    };
-    
-    try {
+        background: background, // e.g., { level: 'Intermediate', group: 'Pre-Engineering' }
+        user_id: userId // User ID from auth
+    };    try {
       // Pass the payload to the API call
       const response = await quizAPI.startQuiz(payload);
       const data = response.data; // { session_id, next_question, is_complete ... }
@@ -39,29 +38,28 @@ export const quizService = {
     }
   },
 
-  /**
-   * Step 2: Submit ONE answer and handle the response (Next Question or Results)
-   */
-  async submitAnswer(score) {
-    const store = useQuizStore.getState();
-    const { sessionId, currentQuestion } = store;
+  /**
+   * Step 2: Submit ONE answer and handle the response (Next Question or Results)
+   */
+  async submitAnswer(score) {
+    const store = useQuizStore.getState();
+    const { sessionId, currentQuestion } = store;
 
-    if (!sessionId || !currentQuestion) {
-      console.error("Missing session or question data");
-      return;
-    }
+    if (!sessionId || !currentQuestion) {
+      console.error("Missing session or question data");
+      return;
+    }
 
-    store.setLoading(true);
+    store.setLoading(true);
 
-    // Prepare payload matching Python backend expectation
-    const payload = {
-      session_id: sessionId,
-      question_id: currentQuestion.id,
-      dimension: currentQuestion.dimension,
-      score: score // 1-5
-    };
-
-    try {
+    // Prepare payload matching Python backend expectation
+    const payload = {
+      session_id: sessionId,
+      question_id: currentQuestion.id,
+      question_text: currentQuestion.text, // Add question text for history
+      dimension: currentQuestion.dimension,
+      score: score // 1-5
+    };    try {
       // 1. Record in local history for UI
       store.recordAnswer(currentQuestion.id, currentQuestion.dimension, score);
 
@@ -126,6 +124,60 @@ export const quizService = {
         store.setError("Failed to finish quiz early.");
         store.setLoading(false);
         throw error;
+    }
+  },
+
+  /**
+   * Go back to previous question
+   */
+  async goBack() {
+    const store = useQuizStore.getState();
+    const { sessionId, history } = store;
+
+    if (!sessionId) {
+      console.error("No session ID for going back");
+      return;
+    }
+
+    // Don't allow going back if there's no history
+    if (!history || history.length === 0) {
+      console.warn("Cannot go back - no history");
+      return;
+    }
+
+    store.setLoading(true);
+
+    try {
+      const response = await quizAPI.goBack({ session_id: sessionId });
+      const data = response.data;
+
+      // Remove the last answer from history since we're going back
+      store.removeLastAnswer();
+
+      // Update with previous question
+      if (data.next_question) {
+        store.setCurrentQuestion(data.next_question);
+      }
+
+      store.setLoading(false);
+      return data;
+    } catch (error) {
+      console.error("Failed to go back:", error);
+      store.setError("Failed to go back");
+      store.setLoading(false);
+    }
+  },
+
+  /**
+   * Get user's quiz history
+   */
+  async getUserHistory(userId) {
+    try {
+      const response = await quizAPI.getUserHistory(userId);
+      return response.data;
+    } catch (error) {
+      console.error("Failed to get quiz history:", error);
+      throw error;
     }
   }
 };

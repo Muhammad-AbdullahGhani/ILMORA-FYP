@@ -82,8 +82,19 @@ def calculate_next_step(state: Dict[str, Any]) -> Tuple[Dict[str, Any], Optional
         state['is_complete'] = True
         return state, None
 
-def process_answer(state: Dict[str, Any], dim: str, score: int) -> Dict[str, Any]:
+def process_answer(state: Dict[str, Any], dim: str, score: int, question_id: str, question_text: str) -> Dict[str, Any]:
     if state['is_complete']: return state
+    
+    # Save to history for back navigation
+    if 'answer_history' not in state:
+        state['answer_history'] = []
+    
+    state['answer_history'].append({
+        'question_id': question_id,
+        'question_text': question_text,
+        'dimension': dim,
+        'score': score
+    })
     
     state['scores'][dim] += score
     state['counts'][dim] += 1
@@ -107,3 +118,37 @@ def compute_results(state: Dict[str, Any]) -> Dict[str, Any]:
         'sorted_results': sorted_s,
         'holland_code': "".join([d for d, s in sorted_s[:3]])
     }
+
+def go_back_one_question(state: Dict[str, Any]) -> Tuple[Dict[str, Any], Optional[Dict[str, Any]]]:
+    """
+    Navigate back to the previous question.
+    Returns: (updated_state, previous_question)
+    """
+    history = state.get('answer_history', [])
+    
+    if not history:
+        return state, None  # Cannot go back if no history
+    
+    # Remove the last answer from history
+    last_answer = history.pop()
+    
+    # Revert the score
+    dim = last_answer['dimension']
+    score = last_answer['score']
+    state['scores'][dim] -= score
+    state['counts'][dim] -= 1
+    state['total_asked'] -= 1
+    
+    # Mark as incomplete if it was complete
+    if state['is_complete']:
+        state['is_complete'] = False
+    
+    # Return the previous question
+    previous_question = {
+        'id': last_answer['question_id'],
+        'text': last_answer['question_text'],
+        'dimension': last_answer['dimension'],
+        'options': [1, 2, 3, 4, 5]
+    }
+    
+    return state, previous_question

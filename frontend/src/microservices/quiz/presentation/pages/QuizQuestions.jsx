@@ -7,9 +7,10 @@ import { Label } from "@/shared/components/ui/label";
 import { Progress } from "@/shared/components/ui/progress";
 import { Badge } from "@/shared/components/ui/badge";
 import { Slider } from "@/shared/components/ui/slider";
-import { X, Sparkles, Loader2, ArrowRight } from "lucide-react";
+import { X, Sparkles, Loader2, ArrowRight, ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Avatar, AvatarFallback } from "@/shared/components/ui/avatar";
+import { useAuth } from "@/app/providers/AuthProvider";
 
 // Imports from your Application Layer
 import { quizService } from "../../application/quizService";
@@ -48,17 +49,16 @@ const getDimensionTheme = (dimension) => {
 
 export function QuizQuestions() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   
   // Access Global State
-  const { 
-    currentQuestion, 
-    isLoading, 
-    isComplete, 
-    scores,
-    history,
-    sessionId,
-    error
-  } = useQuizStore();
+  const currentQuestion = useQuizStore((state) => state.currentQuestion);
+  const isLoading = useQuizStore((state) => state.isLoading);
+  const isComplete = useQuizStore((state) => state.isComplete);
+  const scores = useQuizStore((state) => state.scores);
+  const history = useQuizStore((state) => state.history);
+  const sessionId = useQuizStore((state) => state.sessionId);
+  const error = useQuizStore((state) => state.error);
 
   // --- Local State for Background Form ---
   const [showBackgroundForm, setShowBackgroundForm] = useState(!sessionId);
@@ -85,8 +85,9 @@ export function QuizQuestions() {
   }, [isComplete, scores, navigate]);
 
   useEffect(() => {
+    console.log("Question changed to:", currentQuestion?.id, currentQuestion?.text);
     setCurrentAnswer(3);
-  }, [currentQuestion?.id]);
+  }, [currentQuestion]);
 
   // --- Handlers ---
 
@@ -99,9 +100,23 @@ export function QuizQuestions() {
     // Save to store locally
     useQuizStore.getState().setStudentBackground(background);
     
-    // Call API to start quiz
-    await quizService.startQuiz(background); 
+    // Get user ID from auth
+    const userId = user?.id || user?.email || 'anonymous';
+    
+    // Call API to start quiz with user_id
+    await quizService.startQuiz(background, userId); 
     setShowBackgroundForm(false);
+  };
+
+  const handleGoBack = async () => {
+    try {
+      console.log("Going back - current question:", currentQuestion?.id, "history length:", history?.length);
+      const result = await quizService.goBack();
+      console.log("Backend returned:", result);
+      console.log("After going back - new question:", useQuizStore.getState().currentQuestion);
+    } catch (error) {
+      console.error("Failed to go back:", error);
+    }
   };
 
   const handleConfirmAnswer = async () => {
@@ -328,14 +343,32 @@ export function QuizQuestions() {
                     </div>
                   </div>
 
-                  <Button
-                    onClick={handleConfirmAnswer}
-                    disabled={isLoading}
-                    className={`w-full text-white hover:opacity-90 text-base sm:text-lg py-6 rounded-xl shadow-lg transition-all ${theme.accent}`}
-                    size="lg"
-                  >
-                    {isLoading ? <Loader2 className="animate-spin" /> : "Continue"}
-                  </Button>
+                  <div className="flex gap-3">
+                    {/* Back Button - Show if user has answered at least one question */}
+                    {questionsAnswered > 0 && (
+                      <Button
+                        variant="outline"
+                        onClick={handleGoBack}
+                        disabled={isLoading}
+                        className="flex-1 text-base sm:text-lg py-6 rounded-xl shadow-lg"
+                        size="lg"
+                      >
+                        <ArrowLeft className="w-4 h-4 mr-2" />
+                        Back
+                      </Button>
+                    )}
+                    
+                    {/* Continue Button */}
+                    <Button
+                      onClick={handleConfirmAnswer}
+                      disabled={isLoading}
+                      className={`${questionsAnswered > 0 ? 'flex-1' : 'w-full'} text-white hover:opacity-90 text-base sm:text-lg py-6 rounded-xl shadow-lg transition-all ${theme.accent}`}
+                      size="lg"
+                    >
+                      {isLoading ? <Loader2 className="animate-spin mr-2" /> : null}
+                      Continue <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>

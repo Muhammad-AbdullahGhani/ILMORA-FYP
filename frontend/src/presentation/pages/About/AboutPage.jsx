@@ -1,8 +1,47 @@
-import React from 'react';
-import { Card, CardContent } from "./../../../shared/components/ui/card";
+import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "./../../../shared/components/ui/card";
 import { Button } from "./../../../shared/components/ui/button";
-import { Mail, Github, Linkedin, Twitter, Users, Target, Heart } from "lucide-react";
+import { Input } from "./../../../shared/components/ui/input";
+import { Textarea } from "./../../../shared/components/ui/textarea";
+import { Label } from "./../../../shared/components/ui/label";
+import { Mail, Github, Linkedin, Twitter, Users, Target, Heart, Send, CheckCircle2, AlertCircle, Loader2, Phone, MessageSquare, Sparkles, Award, TrendingUp } from "lucide-react";
+import { axiosClient } from "@/shared/utils/axiosClient";
+import { motion } from "framer-motion";
+
 export function AboutPage() {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    subject: '',
+    message: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState(null); // 'success', 'error', or null
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitStatus(null);
+
+    try {
+      const response = await axiosClient.post('/contact/submit', formData);
+      setSubmitStatus('success');
+      setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
+    } catch (error) {
+      console.error('Contact form error:', error);
+      setSubmitStatus('error');
+    } finally {
+      setIsSubmitting(false);
+      setTimeout(() => setSubmitStatus(null), 5000);
+    }
+  };
+
   const team = [{
     name: "Taimoor Raza Asif",
     role: "Full Stack Developer",
@@ -16,78 +55,274 @@ export function AboutPage() {
     role: "Data Scientist",
     img: ""
   }];
+
+  const stats = [
+    { icon: Users, value: "50,000+", label: "Students Helped" },
+    { icon: Award, value: "500+", label: "Universities" },
+    { icon: TrendingUp, value: "95%", label: "Success Rate" },
+    { icon: Sparkles, value: "4.8/5", label: "User Rating" }
+  ];
+
   return (
-    <div className="min-h-screen bg-muted/30">
-      <div className="bg-gradient-to-br from-primary via-primary/90 to-accent py-20 px-4">
-        <div className="max-w-5xl mx-auto text-center text-white">
-          <h1 className="text-5xl font-bold mb-6">About ILM-ORA</h1>
-          <p className="text-xl opacity-90 max-w-3xl mx-auto">Empowering students to make informed decisions about their educational future through AI-powered recommendations and comprehensive university insights.</p>
-        </div>
-      </div>
+    <div className="min-h-screen bg-background">
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        
+        {/* Hero Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-12"
+        >
+          {/* <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+            About ILM-ORA
+          </h1> */}
+          <p className="text-lg text-muted-foreground max-w-2xl mt-8 mx-auto">
+            Empowering students to make informed decisions about their educational journey
+          </p>
+        </motion.div>
 
-      <div className="max-w-7xl mx-auto p-4 md:p-8">
-        <div className="grid md:grid-cols-3 gap-8 mb-16">
-          <Card>
-            <CardContent className="p-8 text-center">
-              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                <Target className="w-8 h-8 text-primary" />
-              </div>
-              <h3 className="text-xl font-bold mb-2">Our Mission</h3>
-              <p className="text-muted-foreground">To democratize access to quality education by helping students find the perfect university match</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-8 text-center">
-              <div className="w-16 h-16 rounded-full bg-secondary/10 flex items-center justify-center mx-auto mb-4">
-                <Heart className="w-8 h-8 text-secondary" />
-              </div>
-              <h3 className="text-xl font-bold mb-2">Our Values</h3>
-              <p className="text-muted-foreground">Student-first approach, data-driven insights, and commitment to educational excellence</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-8 text-center">
-              <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center mx-auto mb-4">
-                <Users className="w-8 h-8 text-accent" />
-              </div>
-              <h3 className="text-xl font-bold mb-2">Our Impact</h3>
-              <p className="text-muted-foreground">50,000+ students helped in finding their ideal university and career path</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="mb-16">
-          <h2 className="text-3xl font-bold text-center mb-12">Meet Our Team</h2>
-          <div className="grid md:grid-cols-4 gap-8">
-            {team.map((member, index) => (
-              <Card key={index} className="text-center hover:shadow-lg transition-all">
-                <CardContent className="p-6">
-                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-secondary mx-auto mb-4 flex items-center justify-center text-white text-2xl font-bold">
-                    {member.name.split(" ").map((n) => n[0]).join("")}
+        {/* Mission, Values, Impact - Horizontal Cards */}
+        <div className="grid md:grid-cols-3 gap-4 mb-12">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            viewport={{ once: true }}
+          >
+            <Card className="border-l-4 border-l-primary hover:shadow-md transition-all p-6 h-full">
+              <CardContent className="p-5">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <Target className="w-5 h-5 text-primary" />
                   </div>
-                  <h4 className="font-bold mb-1">{member.name}</h4>
-                  <p className="text-sm text-muted-foreground">{member.role}</p>
-                </CardContent>
-              </Card>
+                  <div>
+                    <h3 className="font-bold text-lg mb-1">Our Mission</h3>
+                    <p className="text-muted-foreground text-sm leading-relaxed">
+                      Democratizing access to quality education through intelligent university matching
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.1 }}
+            viewport={{ once: true }}
+          >
+            <Card className="border-l-4 border-l-purple-600 hover:shadow-md transition-all p-6 h-full">
+              <CardContent className="p-5">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-purple-600/10 flex items-center justify-center flex-shrink-0">
+                    <Heart className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg mb-1">Our Values</h3>
+                    <p className="text-muted-foreground text-sm leading-relaxed">
+                      Student-first approach with data-driven insights and educational excellence
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.2 }}
+            viewport={{ once: true }}
+          >
+            <Card className="border-l-4 border-l-accent hover:shadow-md transition-all p-6 h-full">
+              <CardContent className="p-5">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
+                    <Users className="w-5 h-5 text-accent" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg mb-1">Our Impact</h3>
+                    <p className="text-muted-foreground text-sm leading-relaxed">
+                      Guiding 50,000+ students to their ideal university and career paths
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+
+        {/* Team Section - Simple & Clean */}
+        <div className="mb-12">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            viewport={{ once: true }}
+            className="text-center mb-8"
+          >
+            <h2 className="text-3xl font-bold mb-2">Meet Our Team</h2>
+            <p className="text-muted-foreground">Passionate professionals dedicated to your success</p>
+          </motion.div>
+          
+          <div className="grid md:grid-cols-3 gap-4">
+            {team.map((member, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: index * 0.1 }}
+                viewport={{ once: true }}
+              >
+                <Card className="hover:shadow-md transition-all">
+                  <CardContent className="p-8 text-center">
+                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-secondary mx-auto mb-3 flex items-center justify-center text-white text-xl font-bold">
+                      {member.name.split(" ").map((n) => n[0]).join("")}
+                    </div>
+                    <h4 className="font-bold mb-1">{member.name}</h4>
+                    <p className="text-sm text-muted-foreground mb-3">{member.role}</p>
+                    <div className="flex justify-center gap-1">
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                        <Github className="w-4 h-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                        <Linkedin className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
             ))}
           </div>
         </div>
 
-        <Card className="bg-gradient-to-br from-primary/10 to-secondary/10 border-2">
-          <CardContent className="p-12 text-center">
-            <h2 className="text-3xl font-bold mb-4">Get in Touch</h2>
-            <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">Have questions or suggestions? We'd love to hear from you!</p>
-            <div className="flex justify-center gap-4 mb-8">
-              <Button variant="outline" size="icon" className="rounded-full"><Mail className="w-5 h-5" /></Button>
-              <Button variant="outline" size="icon" className="rounded-full"><Github className="w-5 h-5" /></Button>
-              <Button variant="outline" size="icon" className="rounded-full"><Linkedin className="w-5 h-5" /></Button>
-              <Button variant="outline" size="icon" className="rounded-full"><Twitter className="w-5 h-5" /></Button>
-            </div>
-            <Button size="lg" className="bg-primary hover:bg-primary/90"><Mail className="w-5 h-5 mr-2" />Contact Us</Button>
-          </CardContent>
-        </Card>
+        {/* Contact Section - Clean Form */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          viewport={{ once: true }}
+        >
+          <Card>
+            <CardHeader className="text-center pb-4">
+              <CardTitle className="text-2xl">Get in Touch</CardTitle>
+              <CardDescription>
+                Have questions? We'd love to hear from you
+              </CardDescription>
+            </CardHeader>
+
+            <CardContent className="px-6 pb-6">
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="name">Name <span className="text-red-500">*</span></Label>
+                    <Input
+                      id="name"
+                      name="name"
+                      placeholder="John Doe"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="email">Email <span className="text-red-500">*</span></Label>
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      placeholder="john@example.com"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="phone">Phone</Label>
+                    <Input
+                      id="phone"
+                      name="phone"
+                      type="tel"
+                      placeholder="+92 300 1234567"
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="subject">Subject</Label>
+                    <Input
+                      id="subject"
+                      name="subject"
+                      placeholder="General Inquiry"
+                      value={formData.subject}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="message">Message <span className="text-red-500">*</span></Label>
+                  <Textarea
+                    id="message"
+                    name="message"
+                    placeholder="Tell us how we can help you..."
+                    value={formData.message}
+                    onChange={handleInputChange}
+                    required
+                    rows={5}
+                    className="resize-none"
+                  />
+                </div>
+
+                {submitStatus === 'success' && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-950/20 text-green-700 dark:text-green-400 rounded-md border border-green-200 dark:border-green-900"
+                  >
+                    <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+                    <p className="text-sm">Message sent successfully! We'll get back to you soon.</p>
+                  </motion.div>
+                )}
+
+                {submitStatus === 'error' && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400 rounded-md border border-red-200 dark:border-red-900"
+                  >
+                    <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                    <p className="text-sm">Failed to send message. Please try again.</p>
+                  </motion.div>
+                )}
+
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4 mr-2" />
+                      Send Message
+                    </>
+                  )}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
     </div>
   );

@@ -36,13 +36,23 @@ export function Navigation() {
   const { theme, toggleTheme } = useTheme();
   const { isAuthenticated, logout, user } = useAuth();
 
-  const navLinks = [
+  // Public links visible to unauthenticated users
+  const publicLinks = [
     { name: "Home", path: "/", icon: Home },
+    { name: "Contact", path: "/about", icon: Mail },
+  ];
+
+  // Protected links only for authenticated users
+  const authenticatedLinks = [
+    { name: "Dashboard", path: "/dashboard", icon: Home },
     { name: "Quiz", path: "/quiz-intro", icon: ClipboardList },
     { name: "Universities", path: "/universities", icon: Building2 },
     { name: "Careers", path: "/careers", icon: Briefcase },
     { name: "Contact", path: "/about", icon: Mail },
   ];
+
+  // Determine which links to show based on auth state
+  const navLinks = isAuthenticated ? authenticatedLinks : publicLinks;
 
   // Helper to generate initials from name (e.g., "Demo User" -> "DU")
   const getInitials = (name) => {
@@ -66,10 +76,10 @@ export function Navigation() {
         <div className="flex justify-between h-16 items-center">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-              <GraduationCap className="w-6 h-6 text-white" />
+            <div className="w-12 h-12  flex items-center justify-center">
+              <img src="/ilm-ora-logo.png" alt="ILM-ORA Logo" className="w-12 h-12" />
             </div>
-            <span className="text-xl font-semibold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            <span className="text-2xl mt-2 font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
               ILM-ORA
             </span>
           </Link>
@@ -99,9 +109,18 @@ export function Navigation() {
               )}
             </Button>
 
-            {/* Desktop: Show User Menu if Authenticated, else Show Login Button */}
+            {/* Desktop: Show User Menu and Logout if Authenticated, else Show Login Button */}
             {isAuthenticated ? (
-              <DropdownMenu>
+              <>
+                <Button 
+                  variant="ghost" 
+                  className="hidden md:flex text-red-600 hover:text-red-600 hover:bg-red-100/10" 
+                  onClick={handleLogout}
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Logout
+                </Button>
+                <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                     <Avatar>
@@ -143,6 +162,7 @@ export function Navigation() {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+              </>
             ) : (
               <Link to="/auth" className="hidden md:block">
                 <Button className="bg-primary hover:bg-primary/90">Get Started</Button>

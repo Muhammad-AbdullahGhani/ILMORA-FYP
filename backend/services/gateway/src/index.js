@@ -7,6 +7,15 @@ import { requestLogger } from './middleware/requestLogger.js';
 import { rateLimiter } from './middleware/rateLimiter.js';
 import apiRoutes from './routes/index.js';
 import { serviceRegistry } from './utils/serviceRegistry.js';
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load .env from parent directory
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const app = express();
 
