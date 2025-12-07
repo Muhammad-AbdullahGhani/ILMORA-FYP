@@ -1,5 +1,6 @@
 
 import Review from '../models/Review.js';
+import { University } from '../models/University.js';
 import { predictSingle, predictBatch } from '../services/sentimentService.js'; // Fixed: import predictBatch
 
 /**
@@ -175,13 +176,43 @@ export const getReviewStats = async (req, res) => {
 
         const totalCount = await Review.countDocuments(query);
 
+        // Check if we have cached sentiment analysis
+        const universityDoc = await University.findOne({
+            $or: [
+                { name: { $regex: new RegExp(`^${sanitizedName}$`, 'i') } },
+                { apiName: { $regex: new RegExp(`^${sanitizedName}$`, 'i') } }
+            ]
+        });
+
+        // Check if cache is valid (less than 24 hours old and review count matches)
+        const CACHE_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours
+        const now = new Date();
+        const cacheIsValid = universityDoc?.cachedSentiment?.lastAnalyzed &&
+            (now - new Date(universityDoc.cachedSentiment.lastAnalyzed)) < CACHE_DURATION_MS &&
+            universityDoc.cachedSentiment.totalReviews === totalCount;
+
+        if (cacheIsValid) {
+            console.log(`[STATS] ✅ Using cached sentiment analysis (age: ${Math.round((now - new Date(universityDoc.cachedSentiment.lastAnalyzed)) / 1000 / 60)} minutes)`);
+            return res.json({
+                success: true,
+                university,
+                cached: true,
+                stats: {
+                    overall_rating: universityDoc.cachedSentiment.overallRating || 0,
+                    total_reviews: universityDoc.cachedSentiment.totalReviews || totalCount,
+                    rating_breakdown: universityDoc.cachedSentiment.ratingBreakdown || {},
+                    review_distribution: universityDoc.cachedSentiment.reviewDistribution || {}
+                }
+            });
+        }
+
         // Limit to latest 50 reviews for AI analysis to prevent timeouts
         const reviews = await Review.find(query)
             .sort({ createdAt: -1 })
             .limit(50)
             .lean();
 
-        console.log(`[STATS] Found ${totalCount} total reviews, analyzing latest ${reviews.length}`);
+        console.log(`[STATS] 🔄 Cache miss or expired. Analyzing ${reviews.length} reviews...`);
 
         if (reviews.length === 0) {
             return res.json({
@@ -222,9 +253,27 @@ export const getReviewStats = async (req, res) => {
 
         console.log('[STATS] AI Response:', JSON.stringify(aiStats, null, 2));
 
+        // Cache the results in the University document
+        if (universityDoc) {
+            universityDoc.cachedSentiment = {
+                overallRating: aiStats.overall_rating || 0,
+                predictions: aiStats.predictions || [],
+                ratingBreakdown: aiStats.rating_breakdown || {},
+                reviewDistribution: aiStats.review_distribution || {},
+                totalReviews: totalCount,
+                lastAnalyzed: now,
+                reviewsAnalyzedCount: reviews.length
+            };
+            await universityDoc.save();
+            console.log(`[STATS] ✅ Cached sentiment analysis for ${university}`);
+        } else {
+            console.warn(`[STATS] ⚠️  University document not found, cannot cache results`);
+        }
+
         res.json({
             success: true,
             university,
+            cached: false,
             stats: {
                 overall_rating: aiStats.overall_rating || 0,
                 total_reviews: totalCount, // Return the real total count

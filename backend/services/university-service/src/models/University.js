@@ -47,6 +47,33 @@ const UniversitySchema = new mongoose.Schema({
     // Embedded Programs
     programs: [ProgramSchema],
 
+    // Cached Sentiment Analysis
+    cachedSentiment: {
+        overallRating: Number,
+        predictions: [Number],
+        ratingBreakdown: {
+            Cafeteria: Number,
+            Campus: Number,
+            Faculty: Number,
+            Hostels: Number,
+            Labs: Number,
+            Management: Number,
+            Overall: Number,
+            Resources: Number,
+            Sports: Number
+        },
+        reviewDistribution: {
+            '1': Number,
+            '2': Number,
+            '3': Number,
+            '4': Number,
+            '5': Number
+        },
+        totalReviews: Number,
+        lastAnalyzed: Date,
+        reviewsAnalyzedCount: Number // Number of reviews used for this analysis
+    },
+
     // Metadata
     lastUpdated: { type: Date, default: Date.now }
 });

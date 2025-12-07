@@ -3,8 +3,11 @@ import { serviceClient } from '../utils/serviceClient.js';
 /**
  * Proxy handler middleware factory
  * Creates middleware to forward requests to target microservice
+ * @param {string} serviceKey - The service identifier
+ * @param {string} targetPath - The target path on the service
+ * @param {object} config - Additional configuration (e.g., timeout)
  */
-export const proxyRequest = (serviceKey, targetPath) => {
+export const proxyRequest = (serviceKey, targetPath, config = {}) => {
   return async (req, res, next) => {
     try {
       // Replace route parameters in target path
@@ -27,7 +30,9 @@ export const proxyRequest = (serviceKey, targetPath) => {
             'X-User-Email': req.user.email,
             'X-User-Role': req.user.role
           })
-        }
+        },
+        // Add custom timeout if provided
+        ...(config.timeout && { timeout: config.timeout })
       };
 
       // Remove headers that shouldn't be forwarded

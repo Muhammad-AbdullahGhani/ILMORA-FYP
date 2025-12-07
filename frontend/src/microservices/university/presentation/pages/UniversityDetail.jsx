@@ -6,6 +6,7 @@ import { Badge } from "@/shared/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
 import { MapPin, Star, Users, ArrowLeft, Brain, Sparkles, Heart, Share2, ExternalLink, MessageSquare, ChevronLeft, ChevronRight } from "lucide-react";
 import { ImageWithFallback } from "@/shared/components/ImageWithFallback";
+import { getUniversityImage } from "@/shared/utils/universityImages";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
 const API_BASE = "";
@@ -25,6 +26,20 @@ export function UniversityDetail() {
   const [programsTotalPages, setProgramsTotalPages] = React.useState(1);
   const [programsLoading, setProgramsLoading] = React.useState(false);
   const PROGRAMS_PER_PAGE = 5;
+
+  // Scholarships State
+  const [scholarships, setScholarships] = React.useState([]);
+  const [scholarshipsLoading, setScholarshipsLoading] = React.useState(false);
+  const [scholarshipsError, setScholarshipsError] = React.useState(null);
+  const [activeScholarshipTab, setActiveScholarshipTab] = React.useState("all-pakistan");
+  const [scholarshipPages, setScholarshipPages] = React.useState({
+    "all-pakistan": 1,
+    "balochistan-fata": 1,
+    "university-specific": 1,
+    "other": 1
+  });
+  const [expandedScholarships, setExpandedScholarships] = React.useState({});
+  const SCHOLARSHIPS_PER_PAGE = 7;
 
   React.useEffect(() => {
     const loadUniversityData = async () => {
@@ -116,6 +131,113 @@ export function UniversityDetail() {
     fetchPrograms();
   }, [id, programsPage]);
 
+  // Fetch Scholarships
+  React.useEffect(() => {
+    const fetchScholarships = async () => {
+      if (!id) return;
+
+      setScholarshipsLoading(true);
+      setScholarshipsError(null);
+
+      try {
+        const res = await fetch(`${API_BASE}/api/universities/${encodeURIComponent(id)}/scholarships`);
+        if (res.ok) {
+          const data = await res.json();
+          setScholarships(data.scholarships || []);
+        } else {
+          setScholarshipsError("Failed to load scholarships");
+        }
+      } catch (error) {
+        console.error("Failed to fetch scholarships:", error);
+        setScholarshipsError("Failed to load scholarships");
+      } finally {
+        setScholarshipsLoading(false);
+      }
+    };
+
+    fetchScholarships();
+  }, [id]);
+
+  // Categorize scholarships
+  const categorizeScholarships = React.useMemo(() => {
+    const categories = {
+      "all-pakistan": [],
+      "balochistan-fata": [],
+      "university-specific": [],
+      "other": []
+    };
+
+    // Get clean university name variations for matching
+    const uniName = (universityName || id || '').toLowerCase();
+    const uniNameShort = uniName.split(',')[0].trim(); // "Air University" from "Air University, Islamabad"
+    const uniNameParts = uniNameShort.split(/[\s-]+/); // ["air", "university"]
+
+    scholarships.forEach(scholarship => {
+      const area = (scholarship.area || '').toLowerCase();
+      const matchReason = (scholarship.matchReason || '').toLowerCase();
+      const offeredBy = (scholarship.offered_by || '').toLowerCase();
+      const title = (scholarship.title || '').toLowerCase();
+      const fullContent = (scholarship.full_content || '').toLowerCase();
+
+      // Check if university-specific scholarship
+      // Check in offered_by, title, or if university name appears in full_content list
+      const isUniversitySpecific = 
+        offeredBy.includes(uniNameShort) ||
+        title.includes(uniNameShort) ||
+        (fullContent.includes(uniNameShort) && uniNameParts.length >= 2 && 
+         uniNameParts.every(part => part.length < 4 || fullContent.includes(part)));
+
+      if (isUniversitySpecific) {
+        categories["university-specific"].push(scholarship);
+      }
+      // Check All Pakistan
+      else if (area.includes('all pakistan') || matchReason.includes('all universities')) {
+        categories["all-pakistan"].push(scholarship);
+      }
+      // Check Balochistan/FATA
+      else if (area.includes('balochistan') || area.includes('fata') || area.includes('baloch gb')) {
+        categories["balochistan-fata"].push(scholarship);
+      }
+      // Everything else
+      else {
+        categories["other"].push(scholarship);
+      }
+    });
+
+    return categories;
+  }, [scholarships, id, universityName]);
+
+  // Get paginated scholarships for current tab
+  const getPaginatedScholarships = (category) => {
+    const scholarshipsInCategory = categorizeScholarships[category] || [];
+    const currentPage = scholarshipPages[category];
+    const startIndex = (currentPage - 1) * SCHOLARSHIPS_PER_PAGE;
+    const endIndex = startIndex + SCHOLARSHIPS_PER_PAGE;
+    return scholarshipsInCategory.slice(startIndex, endIndex);
+  };
+
+  // Get total pages for a category
+  const getTotalPages = (category) => {
+    const scholarshipsInCategory = categorizeScholarships[category] || [];
+    return Math.ceil(scholarshipsInCategory.length / SCHOLARSHIPS_PER_PAGE);
+  };
+
+  // Handle scholarship page change
+  const handleScholarshipPageChange = (category, newPage) => {
+    setScholarshipPages(prev => ({
+      ...prev,
+      [category]: newPage
+    }));
+  };
+
+  // Toggle scholarship expansion
+  const toggleScholarshipExpansion = (scholarshipIndex) => {
+    setExpandedScholarships(prev => ({
+      ...prev,
+      [scholarshipIndex]: !prev[scholarshipIndex]
+    }));
+  };
+
   // Correct data path: stats.stats
   const sentimentData = (stats?.stats?.rating_breakdown && typeof stats.stats.rating_breakdown === 'object')
     ? Object.entries(stats.stats.rating_breakdown).map(([cat, score]) => ({
@@ -166,22 +288,21 @@ export function UniversityDetail() {
   return (
     <div className="min-h-screen bg-muted/30">
       {/* Back Button */}
-      <Button variant="secondary" onClick={() => window.history.back()} className="absolute top-4 left-4 z-50 shadow-lg">
+      <Button variant="secondary" onClick={() => window.history.back()} className="absolute top-20 right-8 z-50 shadow-lg">
         <ArrowLeft className="w-4 h-4 mr-2" /> Back
       </Button>
 
-      {/* Hero */}
+      {/* Hero Section */}
       <div className="relative h-96 overflow-hidden">
         <ImageWithFallback
-          src="https://images.unsplash.com/photo-1595837979282-2db3e1e83e5e?q=80&w=2070"
-          alt="Campus"
+          src={getUniversityImage(stats?.university?.apiName || universityName, "https://images.unsplash.com/photo-1595837979282-2db3e1e83e5e?q=80&w=2070")}
+          alt={`${universityName} Campus`}
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
           <div className="max-w-7xl mx-auto">
             <div className="flex flex-wrap gap-3 mb-4">
-              <Badge className="text-lg px-4 py-2">95% Match</Badge>
               <Badge variant="secondary" className="text-lg">#1 in Pakistan</Badge>
               <Badge className="bg-green-600">
                 <Sparkles className="w-4 h-4 mr-2" /> AI Insights Live
@@ -432,10 +553,228 @@ export function UniversityDetail() {
               <TabsContent value="scholarships">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Scholarships & Financial Aid</CardTitle>
+                    <CardTitle>Scholarships & Financial Aid (Bachelor Level)</CardTitle>
+                    <p className="text-muted-foreground text-sm mt-1">
+                      {scholarshipsLoading ? "Loading..." : `${scholarships.length} scholarship${scholarships.length !== 1 ? 's' : ''} available for bachelor students`}
+                    </p>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-muted-foreground text-center py-8">No scholarship information available yet.</p>
+                    {scholarshipsLoading ? (
+                      <div className="text-center py-8">
+                        <div className="animate-spin w-8 h-8 border-4 border-primary rounded-full border-t-transparent mx-auto mb-4" />
+                        <p className="text-muted-foreground">Loading scholarships...</p>
+                      </div>
+                    ) : scholarshipsError ? (
+                      <div className="text-center py-8">
+                        <p className="text-destructive">{scholarshipsError}</p>
+                      </div>
+                    ) : scholarships.length === 0 ? (
+                      <p className="text-muted-foreground text-center py-8">No scholarship information available yet.</p>
+                    ) : (
+                      <Tabs value={activeScholarshipTab} onValueChange={setActiveScholarshipTab} className="w-full">
+                        <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 gap-2">
+                          <TabsTrigger value="all-pakistan" className="text-xs md:text-sm">
+                            All Pakistan ({categorizeScholarships["all-pakistan"].length})
+                          </TabsTrigger>
+                          <TabsTrigger value="balochistan-fata" className="text-xs md:text-sm">
+                            Balochistan/FATA ({categorizeScholarships["balochistan-fata"].length})
+                          </TabsTrigger>
+                          <TabsTrigger value="university-specific" className="text-xs md:text-sm">
+                            {(universityName || id).split(',')[0]} ({categorizeScholarships["university-specific"].length})
+                          </TabsTrigger>
+                          <TabsTrigger value="other" className="text-xs md:text-sm">
+                            Other Regional ({categorizeScholarships["other"].length})
+                          </TabsTrigger>
+                        </TabsList>
+
+                        {["all-pakistan", "balochistan-fata", "university-specific", "other"].map(category => (
+                          <TabsContent key={category} value={category} className="mt-6">
+                            {categorizeScholarships[category].length === 0 ? (
+                              <p className="text-muted-foreground text-center py-8">
+                                No scholarships in this category
+                              </p>
+                            ) : (
+                              <>
+                                <div className="space-y-4">
+                                  {getPaginatedScholarships(category).map((scholarship, index) => {
+                                    const globalIndex = `${category}-${index}`;
+                                    const isExpanded = expandedScholarships[globalIndex];
+                                    
+                                    return (
+                                      <Card key={index} className="hover:shadow-md transition-shadow">
+                                        <CardHeader className="pb-3">
+                                          <div className="flex items-start justify-between gap-4">
+                                            <div className="flex-1">
+                                              <CardTitle className="text-lg mb-2">{scholarship.title}</CardTitle>
+                                              <div className="flex flex-wrap gap-2">
+                                                {scholarship.matchReason && (
+                                                  <Badge variant="secondary" className="text-xs">
+                                                    {scholarship.matchReason.split(';')[0]}
+                                                  </Badge>
+                                                )}
+                                                {scholarship.type && (
+                                                  <Badge variant="outline" className="text-xs">
+                                                    {scholarship.type}
+                                                  </Badge>
+                                                )}
+                                              </div>
+                                            </div>
+                                            {scholarship.application_link && (
+                                              <Button
+                                                variant="default"
+                                                size="sm"
+                                                asChild
+                                              >
+                                                <a
+                                                  href={scholarship.application_link}
+                                                  target="_blank"
+                                                  rel="noopener noreferrer"
+                                                  className="flex items-center gap-2"
+                                                >
+                                                  Apply Now
+                                                  <ExternalLink className="w-4 h-4" />
+                                                </a>
+                                              </Button>
+                                            )}
+                                          </div>
+                                        </CardHeader>
+                                        <CardContent className="space-y-3">
+                                          {/* Compact Summary - Only one line initially */}
+                                          {!isExpanded && (
+                                            <div>
+                                              <p className="text-sm text-muted-foreground line-clamp-1">
+                                                {scholarship.eligibility || scholarship.summary || 'Financial assistance program for eligible students'}
+                                              </p>
+                                            </div>
+                                          )}
+
+                                          {/* Expanded Details - Show everything when expanded */}
+                                          {isExpanded && (
+                                            <div className="space-y-3">
+                                              {/* Amount and Deadline */}
+                                              <div className="grid grid-cols-2 gap-4 pb-3 border-b">
+                                                {scholarship.amount && (
+                                                  <div>
+                                                    <p className="text-xs text-muted-foreground mb-1">Amount</p>
+                                                    <p className="text-base font-semibold text-green-600">{scholarship.amount}</p>
+                                                  </div>
+                                                )}
+                                                {scholarship.deadline && scholarship.deadline !== "N.A" && (
+                                                  <div>
+                                                    <p className="text-xs text-muted-foreground mb-1">Deadline</p>
+                                                    <p className="text-base font-semibold">{scholarship.deadline}</p>
+                                                  </div>
+                                                )}
+                                              </div>
+
+                                              {/* Eligibility */}
+                                              {scholarship.eligibility && (
+                                                <div>
+                                                  <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                                                    <span>Eligibility</span>
+                                                  </h4>
+                                                  <p className="text-sm text-muted-foreground">{scholarship.eligibility}</p>
+                                                </div>
+                                              )}
+
+                                              {/* Summary */}
+                                              {scholarship.summary && (
+                                                <div>
+                                                  <p className="text-sm text-muted-foreground">{scholarship.summary}</p>
+                                                </div>
+                                              )}
+
+                                              {/* Additional Details */}
+                                              <div className="grid grid-cols-2 gap-3 text-sm pt-3 border-t">
+                                                {scholarship.level && (
+                                                  <div>
+                                                    <span className="text-muted-foreground">Level:</span>
+                                                    <span className="ml-2 font-medium">{scholarship.level}</span>
+                                                  </div>
+                                                )}
+                                                {scholarship.area && (
+                                                  <div>
+                                                    <span className="text-muted-foreground">Area:</span>
+                                                    <span className="ml-2 font-medium">{scholarship.area}</span>
+                                                  </div>
+                                                )}
+                                                {scholarship.offered_by && (
+                                                  <div className="col-span-2">
+                                                    <span className="text-muted-foreground">Offered By:</span>
+                                                    <span className="ml-2 font-medium">{scholarship.offered_by}</span>
+                                                  </div>
+                                                )}
+                                              </div>
+                                            </div>
+                                          )}
+
+                                          {/* View More / Learn More Buttons */}
+                                          <div className="flex items-center justify-between pt-3 border-t">
+                                            <Button
+                                              variant="ghost"
+                                              size="sm"
+                                              onClick={() => toggleScholarshipExpansion(globalIndex)}
+                                              className="text-primary hover:text-primary"
+                                            >
+                                              {isExpanded ? "View Less" : "View More"}
+                                            </Button>
+                                            {scholarship.url && (
+                                              <Button
+                                                variant="link"
+                                                size="sm"
+                                                asChild
+                                                className="text-primary"
+                                              >
+                                                <a
+                                                  href={scholarship.url}
+                                                  target="_blank"
+                                                  rel="noopener noreferrer"
+                                                  className="flex items-center gap-1"
+                                                >
+                                                  Learn More
+                                                  <ExternalLink className="w-3 h-3" />
+                                                </a>
+                                              </Button>
+                                            )}
+                                          </div>
+                                        </CardContent>
+                                      </Card>
+                                    );
+                                  })}
+                                </div>
+
+                                {/* Pagination */}
+                                {getTotalPages(category) > 1 && (
+                                  <div className="mt-6 flex justify-center items-center gap-2">
+                                    <Button
+                                      variant="outline"
+                                      size="icon"
+                                      onClick={() => handleScholarshipPageChange(category, scholarshipPages[category] - 1)}
+                                      disabled={scholarshipPages[category] === 1}
+                                    >
+                                      <ChevronLeft className="w-4 h-4" />
+                                    </Button>
+
+                                    <span className="text-sm font-medium">
+                                      Page {scholarshipPages[category]} of {getTotalPages(category)}
+                                    </span>
+
+                                    <Button
+                                      variant="outline"
+                                      size="icon"
+                                      onClick={() => handleScholarshipPageChange(category, scholarshipPages[category] + 1)}
+                                      disabled={scholarshipPages[category] === getTotalPages(category)}
+                                    >
+                                      <ChevronRight className="w-4 h-4" />
+                                    </Button>
+                                  </div>
+                                )}
+                              </>
+                            )}
+                          </TabsContent>
+                        ))}
+                      </Tabs>
+                    )}
                   </CardContent>
                 </Card>
               </TabsContent>

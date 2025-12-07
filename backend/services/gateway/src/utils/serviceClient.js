@@ -20,8 +20,11 @@ class ServiceClient {
       throw new Error(`Service '${serviceKey}' not found in registry`);
     }
 
-    const { method = 'GET', path = '', data, headers = {}, params } = options;
+    const { method = 'GET', path = '', data, headers = {}, params, timeout } = options;
     const url = `${service.url}${path}`;
+
+    // Use custom timeout if provided, otherwise use default
+    const requestTimeout = timeout !== undefined ? timeout : this.timeout;
 
     try {
       const response = await axios({
@@ -33,7 +36,7 @@ class ServiceClient {
           'Content-Type': 'application/json',
           ...headers
         },
-        timeout: this.timeout
+        timeout: requestTimeout
       });
 
       return response.data;

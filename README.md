@@ -1,4 +1,4 @@
-# ILM-ORA - Intelligent Learning Management & Opportunity Recommendation Application
+# ILM-ORA - Intelligent Recommendation Application
 
 An AI-powered educational guidance platform that helps students find their ideal university and career path through intelligent recommendations.
 
