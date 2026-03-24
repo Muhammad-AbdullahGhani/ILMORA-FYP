@@ -181,11 +181,11 @@ export function UniversityDetail() {
 
       // Check if university-specific scholarship
       // Check in offered_by, title, or if university name appears in full_content list
-      const isUniversitySpecific = 
+      const isUniversitySpecific =
         offeredBy.includes(uniNameShort) ||
         title.includes(uniNameShort) ||
-        (fullContent.includes(uniNameShort) && uniNameParts.length >= 2 && 
-         uniNameParts.every(part => part.length < 4 || fullContent.includes(part)));
+        (fullContent.includes(uniNameShort) && uniNameParts.length >= 2 &&
+          uniNameParts.every(part => part.length < 4 || fullContent.includes(part)));
 
       if (isUniversitySpecific) {
         categories["university-specific"].push(scholarship);
@@ -237,14 +237,44 @@ export function UniversityDetail() {
       [scholarshipIndex]: !prev[scholarshipIndex]
     }));
   };
+  const [selectedFactor, setSelectedFactor] = React.useState(null);
 
   // Correct data path: stats.stats
   const sentimentData = (stats?.stats?.rating_breakdown && typeof stats.stats.rating_breakdown === 'object')
-    ? Object.entries(stats.stats.rating_breakdown).map(([cat, score]) => ({
-      category: cat.replace(/_/g, " "),
-      score: typeof score === 'number' ? Number(score.toFixed(1)) : 0
-    }))
+    ? Object.entries(stats.stats.rating_breakdown).map(([cat, score]) => {
+      // Clean up string: remove spaces first to normalize
+      const normalizedCat = cat.replace(/\s+/g, '');
+
+      let displayCategory = normalizedCat;
+      if (normalizedCat === 'JobSupport') displayCategory = 'Job Support';
+      else if (normalizedCat === 'Events') displayCategory = 'Events';
+      else displayCategory = normalizedCat.replace(/([A-Z])/g, ' $1').trim();
+
+      return {
+        category: displayCategory,
+        score: typeof score === 'number' ? Number(score.toFixed(1)) : 0
+      };
+    })
     : [];
+
+  // Categorical AI Summary
+  const aiSummary = React.useMemo(() => {
+    if (!sentimentData.length) return null;
+    const sorted = [...sentimentData]
+      .filter(f => f.score > 0 && f.category !== 'Overall')
+      .sort((a, b) => b.score - a.score);
+
+    if (sorted.length < 2) return "Based on student feedback, this university provides a balanced experience across most surveyed factors.";
+
+    const top = sorted[0];
+    const bottom = sorted[sorted.length - 1];
+
+    return `Students primarily praise ${top.category} (${top.score}/5), while noting that ${bottom.category} (${bottom.score}/5) could see further improvement.`;
+  }, [sentimentData]);
+
+  const filteredReviews = selectedFactor
+    ? reviews.filter(r => r.factor.toLowerCase() === selectedFactor.toLowerCase())
+    : reviews;
 
   const reviewDistribution = stats?.stats?.review_distribution
     ? [5, 4, 3, 2, 1].map(stars => ({
@@ -259,6 +289,12 @@ export function UniversityDetail() {
     : null;
 
   const totalReviews = stats?.stats?.total_reviews || 0;
+
+  const handleChartClick = (data) => {
+    if (data && data.activeLabel) {
+      setSelectedFactor(prev => prev === data.activeLabel ? null : data.activeLabel);
+    }
+  };
 
   const handleProgramsPageChange = (newPage) => {
     if (newPage >= 1 && newPage <= programsTotalPages) {
@@ -481,17 +517,54 @@ export function UniversityDetail() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
+                    {/* AI Insight Summary */}
+                    {aiSummary && (
+                      <div className="mb-8 p-4 bg-primary/5 border border-primary/10 rounded-xl flex items-start gap-4">
+                        <Sparkles className="w-6 h-6 text-primary shrink-0 mt-1" />
+                        <div>
+                          <h4 className="font-bold text-primary mb-1 text-sm uppercase tracking-wider">AI Executive Summary</h4>
+                          <p className="text-lg text-foreground italic leading-relaxed">
+                            "{aiSummary}"
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
                     <div className="grid md:grid-cols-2 gap-8">
                       {/* Category Ratings */}
                       <div>
-                        <h3 className="font-bold text-lg mb-4">Category Ratings</h3>
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="font-bold text-lg">Category Ratings</h3>
+                          {selectedFactor && (
+                            <Badge
+                              variant="secondary"
+                              className="cursor-pointer hover:bg-destructive hover:text-white transition-colors"
+                              onClick={() => setSelectedFactor(null)}
+                            >
+                              Filtering: {selectedFactor} ✕
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground mb-4">💡 Click a bar to filter reviews by that category</p>
                         <ResponsiveContainer width="100%" height={320}>
-                          <BarChart data={sentimentData}>
+                          <BarChart data={sentimentData} onClick={handleChartClick}>
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis dataKey="category" angle={-45} textAnchor="end" height={80} />
                             <YAxis domain={[0, 5]} />
                             <Tooltip formatter={(v) => `${v}/5.0`} />
-                            <Bar dataKey="score" fill="#1976D2" radius={[8, 8, 0, 0]} />
+                            <Bar
+                              dataKey="score"
+                              fill="#1976D2"
+                              radius={[8, 8, 0, 0]}
+                              className="cursor-pointer hover:opacity-80 transition-opacity"
+                            >
+                              {sentimentData.map((entry, index) => (
+                                <Cell
+                                  key={`cell-${index}`}
+                                  fill={selectedFactor === entry.category ? "#FFA000" : "#1976D2"}
+                                />
+                              ))}
+                            </Bar>
                           </BarChart>
                         </ResponsiveContainer>
                       </div>
@@ -520,14 +593,18 @@ export function UniversityDetail() {
                     </div>
 
                     {/* Recent Reviews */}
-                    {reviews.length > 0 && (
+                    {filteredReviews.length > 0 && (
                       <div className="mt-8">
-                        <h3 className="font-bold text-lg mb-4">Recent Student Reviews</h3>
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="font-bold text-lg">
+                            {selectedFactor ? `${selectedFactor} Reviews` : "Recent Student Reviews"}
+                          </h3>
+                        </div>
                         <div className="space-y-4">
-                          {reviews.map((review, i) => (
-                            <div key={i} className="p-6 bg-muted/30 rounded-lg border-l-4 border-primary">
+                          {filteredReviews.map((review, i) => (
+                            <div key={i} className="p-6 bg-muted/30 rounded-lg border-l-4 border-primary shadow-sm hover:shadow-md transition-shadow">
                               <div className="flex items-center justify-between mb-3">
-                                <Badge variant="outline" className="text-sm">{review.factor}</Badge>
+                                <Badge variant="outline" className="text-sm font-semibold">{review.factor}</Badge>
                                 <div className="flex items-center gap-1">
                                   {[1, 2, 3, 4, 5].map((star) => (
                                     <Star
@@ -538,9 +615,12 @@ export function UniversityDetail() {
                                   <span className="text-xs ml-1 font-semibold">{(review.aiRating || 3).toFixed(1)}</span>
                                 </div>
                               </div>
-                              <p className="text-base leading-relaxed mb-3">{review.text}</p>
-                              <div className="flex items-center justify-between">
-                                <span className="text-sm font-medium">{review.author}</span>
+                              <p className="text-base leading-relaxed mb-3 text-foreground/90">{review.text}</p>
+                              <div className="flex items-center justify-between mt-4 text-muted-foreground">
+                                <span className="text-sm font-medium flex items-center gap-2">
+                                  <Users className="w-4 h-4" /> {review.author}
+                                </span>
+                                <span className="text-xs italic">{new Date(review.date).toLocaleDateString()}</span>
                               </div>
                             </div>
                           ))}
@@ -599,7 +679,7 @@ export function UniversityDetail() {
                                   {getPaginatedScholarships(category).map((scholarship, index) => {
                                     const globalIndex = `${category}-${index}`;
                                     const isExpanded = expandedScholarships[globalIndex];
-                                    
+
                                     return (
                                       <Card key={index} className="hover:shadow-md transition-shadow">
                                         <CardHeader className="pb-3">

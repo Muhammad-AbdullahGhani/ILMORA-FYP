@@ -16,7 +16,7 @@ load_dotenv()
 MONGO_URI = os.getenv('MONGO_URI', 'mongodb+srv://abdullahghani:1234@cluster0.ehehitv.mongodb.net/university-reviews?retryWrites=true&w=majority')
 
 # CSV file path
-CSV_PATH = "university_reviews_2000_researched.csv"
+CSV_PATH = "training_data_with_job_support.csv"
 
 def import_reviews():
     print("=" * 70)

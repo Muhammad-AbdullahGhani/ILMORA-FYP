@@ -19,6 +19,8 @@ const FACTORS = [
     { value: 'Campus Life', label: 'Campus Life' },
     { value: 'Facilities', label: 'Facilities' },
     { value: 'Placements', label: 'Placements' },
+    { value: 'Job Support', label: 'Job Support (Alumni Jobs)' },
+    { value: 'Events', label: 'Events' },
 ];
 
 export function ReviewForm({ university, city, onSuccess }) {

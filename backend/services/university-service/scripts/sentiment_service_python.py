@@ -7,12 +7,16 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import torch
 import numpy as np
 from functools import lru_cache
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
 
 # Model configuration
-MODEL_NAME = "AbdullahGhani/Unidatamodel"  # Your Hugging Face model
+MODEL_NAME = "AbdullahGhani/NewFYPmodel_univerity"  # Your Hugging Face model
 
 # Load model and tokenizer
 print("Loading model from Hugging Face...")
@@ -21,13 +25,21 @@ try:
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
     
-    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+    # Use HF_TOKEN from environment if available
+    hf_token = os.getenv('HF_TOKEN')
+    
+    # Load the base tokenizer to avoid the corrupted config from the Kaggle upload
+    # The vocabulary is identical, so this works perfectly.
+    tokenizer = AutoTokenizer.from_pretrained("microsoft/deberta-v3-base", use_fast=False)
+    
     model = AutoModelForSequenceClassification.from_pretrained(
         MODEL_NAME,
         num_labels=1,
-        problem_type="regression"
+        problem_type="regression",
+        token=hf_token
     )
     model.to(device)
+    model.float()  # Force fp32 to avoid dtype mismatch
     model.eval()
     
     # Set to inference mode for better performance
@@ -55,6 +67,10 @@ FACTOR_MAP = {
     'placements': 'Placements',
     'career': 'Placements',
     'jobs': 'Placements',
+    'job support': 'Job Support',
+    'alumni': 'Job Support',
+    'alumni job': 'Job Support',
+    'events': 'Events',
 }
 
 def normalize_factor(factor):
@@ -68,7 +84,12 @@ def normalize_factor(factor):
         'management': 'Management',
         'sports': 'Sports',
         'hostels': 'Hostels',
-        'resources': 'Resources'
+        'hostel': 'Hostels',
+        'resources': 'Resources',
+        'job support': 'Job Support',
+        'job_support': 'Job Support',
+        'alumni': 'Job Support',
+        'events': 'Events',
     }
     return factor_map.get(factor.lower(), 'Overall')
 
@@ -131,6 +152,8 @@ def predict():
         })
         
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
 @app.route('/predict/batch', methods=['POST'])
@@ -191,7 +214,7 @@ def predict_batch():
             factor_groups[factor].append(predictions[i])
         
         # Rating breakdown
-        ordered_factors = ['Overall', 'Faculty', 'Campus', 'Labs', 'Cafeteria', 'Management', 'Sports', 'Hostels', 'Resources']
+        ordered_factors = ['Overall', 'Faculty', 'Campus', 'Labs', 'Cafeteria', 'Management', 'Sports', 'Hostels', 'Resources', 'Job Support', 'Events']
         rating_breakdown = {}
         for factor in ordered_factors:
             if factor in factor_groups:
@@ -226,6 +249,8 @@ def predict_batch():
         })
         
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':

@@ -28,7 +28,7 @@ EPOCHS = 8                     # allow early stopping to decide best point
 LEARNING_RATE = 2e-5
 OUTPUT_DIR = "./deberta_unified_regression"
 SEED = 42
-CSV_PATH = "/kaggle/input/unidataset/university_reviews_2000_researched.csv"
+CSV_PATH = "/kaggle/input/datasets/mabdullahghani206/updateddataset/training_data_with_job_support.csv"
 
 set_seed(SEED)
 

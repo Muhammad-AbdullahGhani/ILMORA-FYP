@@ -16,6 +16,9 @@ const FACTOR_MAP = {
     placements: 'Placements',
     career: 'Placements',
     jobs: 'Placements',
+    'job support': 'Job Support',
+    alumni: 'Job Support',
+    events: 'Events',
 };
 
 /**

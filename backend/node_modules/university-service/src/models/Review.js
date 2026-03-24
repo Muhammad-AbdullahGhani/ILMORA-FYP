@@ -27,7 +27,7 @@ const reviewSchema = new mongoose.Schema({
       values: [
         'Academics', 'Faculty', 'Campus Life', 'Facilities', 'Placements', 'General',
         'Sports', 'Cafeteria', 'Labs', 'Resources', 'Housing', 'Aid',
-        'Management', 'Campus', 'Hostels'
+        'Management', 'Campus', 'Hostels', 'Job Support', 'Events'
       ],
       message: '{VALUE} is not a valid factor'
     }

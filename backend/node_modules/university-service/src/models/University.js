@@ -60,7 +60,9 @@ const UniversitySchema = new mongoose.Schema({
             Management: Number,
             Overall: Number,
             Resources: Number,
-            Sports: Number
+            Sports: Number,
+            JobSupport: Number,
+            Events: Number
         },
         reviewDistribution: {
             '1': Number,

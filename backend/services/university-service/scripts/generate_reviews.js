@@ -210,6 +210,30 @@ const templates = {
         "Common rooms have TV and indoor games.",
         "Cleanliness in washrooms needs improvement.",
         "It's a home away from home. Made great friends."
+    ],
+    "Job Support": [
+        "The alumni network is very active. Seniors help juniors get internships and jobs.",
+        "Career services helped me land a job within 3 months of graduating. {PRO}.",
+        "Most graduates find jobs in their field within 6 months. The placement rate is impressive.",
+        "The university has strong industry ties. Companies like Systems and Netsol actively recruit from here.",
+        "Alumni-to-job ratio is one of the best in the region. {PRO}.",
+        "Job support is weak. You have to find opportunities on your own. {CON}.",
+        "They organize career fairs every semester. Multiple MNCs participate.",
+        "The alumni association is well-organized and offers mentorship programs.",
+        "Graduates struggle to find relevant jobs. The degree alone isn't enough. {CON}.",
+        "Industry partnerships ensure internship opportunities for every student."
+    ],
+    Events: [
+        "The university hosts amazing cultural events every semester.",
+        "Sports week and annual gala are the highlights of campus life.",
+        "Technical workshops and hackathons are organized regularly.",
+        "Guest lectures by industry professionals happen frequently.",
+        "The welcome party for freshers is legendary. Great atmosphere.",
+        "Events are well-funded and professionally organized.",
+        "There aren't many events. Campus feels dead sometimes. {CON}.",
+        "Debating competitions and model UNs are very popular.",
+        "The annual convocation ceremony is grand and well-organized.",
+        "Societies organize engaging events throughout the year."
     ]
 };
 
