@@ -8,6 +8,7 @@ import careerRoutes from './careerRoutes.js';
 import adminRoutes from './adminRoutes.js';
 import reviewRoutes from './reviewRoutes.js';
 import contactRoutes from './contactRoutes.js';
+import hostelRoutes from './hostelRoutes.js';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -25,6 +26,7 @@ router.use('/reviews', reviewRoutes);
 router.use('/careers', careerRoutes);
 router.use('/admin', adminRoutes);
 router.use('/contact', contactRoutes);
+router.use('/hostels', hostelRoutes);
 
 // API info endpoint
 router.get('/', (req, res) => {
@@ -39,7 +41,8 @@ router.get('/', (req, res) => {
       universities: '/api/universities',
       reviews: '/api/reviews',
       careers: '/api/careers',
-      admin: '/api/admin'
+      admin: '/api/admin',
+      hostels: '/api/hostels'
     },
     documentation: '/api/docs'
   });

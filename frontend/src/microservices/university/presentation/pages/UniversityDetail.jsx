@@ -4,12 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
-import { MapPin, Star, Users, ArrowLeft, Brain, Sparkles, Heart, Share2, ExternalLink, MessageSquare, ChevronLeft, ChevronRight } from "lucide-react";
+import { MapPin, Star, Users, ArrowLeft, Brain, Sparkles, Heart, Share2, ExternalLink, MessageSquare, ChevronLeft, ChevronRight, Navigation } from "lucide-react";
 import { ImageWithFallback } from "@/shared/components/ImageWithFallback";
 import { getUniversityImage } from "@/shared/utils/universityImages";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { GoogleMap, LoadScript, MarkerF } from "@react-google-maps/api";
 
 const API_BASE = "";
+const mapContainerStyle = { width: "100%", height: "100%" };
 
 export function UniversityDetail() {
   const { id } = useParams();
@@ -40,6 +42,11 @@ export function UniversityDetail() {
   });
   const [expandedScholarships, setExpandedScholarships] = React.useState({});
   const SCHOLARSHIPS_PER_PAGE = 7;
+  const [hostels, setHostels] = React.useState([]);
+  const [hostelsLoading, setHostelsLoading] = React.useState(false);
+  const [hostelsError, setHostelsError] = React.useState(null);
+  const [hostelMapCenter, setHostelMapCenter] = React.useState({ lat: 33.6844, lng: 73.0479 });
+  const googleMapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "";
 
   React.useEffect(() => {
     const loadUniversityData = async () => {
@@ -108,6 +115,37 @@ export function UniversityDetail() {
     };
 
     loadUniversityData();
+  }, [id]);
+
+  React.useEffect(() => {
+    const fetchNearbyHostels = async () => {
+      if (!id) return;
+      setHostelsLoading(true);
+      setHostelsError(null);
+      try {
+        const res = await fetch(`${API_BASE}/api/hostels/near/${encodeURIComponent(id)}?radius=3000`);
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error || "Failed to fetch nearby hostels");
+        }
+        const data = await res.json();
+        setHostels(data.hostels || []);
+        if (data?.university?.center?.lat && data?.university?.center?.lng) {
+          setHostelMapCenter({
+            lat: data.university.center.lat,
+            lng: data.university.center.lng
+          });
+        }
+      } catch (error) {
+        console.error("Failed to fetch hostels:", error);
+        setHostelsError(error.message || "Failed to fetch nearby hostels");
+        setHostels([]);
+      } finally {
+        setHostelsLoading(false);
+      }
+    };
+
+    fetchNearbyHostels();
   }, [id]);
 
   // Fetch Programs when page changes or ID changes
@@ -239,23 +277,34 @@ export function UniversityDetail() {
   };
   const [selectedFactor, setSelectedFactor] = React.useState(null);
 
+  const toDisplayFactor = (rawFactor) => {
+    const normalized = String(rawFactor || "").replace(/\s+/g, "").trim();
+    if (!normalized) return "General";
+    if (normalized.toLowerCase() === "overall") return null;
+    if (normalized === "JobSupport") return "Job Support";
+    return normalized.replace(/([A-Z])/g, " $1").trim();
+  };
+
   // Correct data path: stats.stats
-  const sentimentData = (stats?.stats?.rating_breakdown && typeof stats.stats.rating_breakdown === 'object')
-    ? Object.entries(stats.stats.rating_breakdown).map(([cat, score]) => {
-      // Clean up string: remove spaces first to normalize
-      const normalizedCat = cat.replace(/\s+/g, '');
-
-      let displayCategory = normalizedCat;
-      if (normalizedCat === 'JobSupport') displayCategory = 'Job Support';
-      else if (normalizedCat === 'Events') displayCategory = 'Events';
-      else displayCategory = normalizedCat.replace(/([A-Z])/g, ' $1').trim();
-
-      return {
-        category: displayCategory,
-        score: typeof score === 'number' ? Number(score.toFixed(1)) : 0
-      };
-    })
+  const parsedSentiment = (stats?.stats?.rating_breakdown && typeof stats.stats.rating_breakdown === 'object')
+    ? Object.entries(stats.stats.rating_breakdown)
+      .map(([cat, score]) => {
+        const category = toDisplayFactor(cat);
+        if (!category) return null;
+        const parsedScore = typeof score === 'number' ? score : Number.parseFloat(score);
+        return {
+          category,
+          score: Number.isFinite(parsedScore) ? Number(parsedScore.toFixed(1)) : 0
+        };
+      })
+      .filter(Boolean)
     : [];
+
+  // 0 means "no reliable signal yet" for that factor, not an actual low rating.
+  const sentimentData = parsedSentiment.filter((item) => item.score > 0);
+  const unratedFactors = parsedSentiment
+    .filter((item) => item.score <= 0)
+    .map((item) => item.category);
 
   // Categorical AI Summary
   const aiSummary = React.useMemo(() => {
@@ -289,6 +338,36 @@ export function UniversityDetail() {
     : null;
 
   const totalReviews = stats?.stats?.total_reviews || 0;
+  const hostelAvailability = stats?.hostelAvailability || null;
+
+  const hostelPolicyBadge = React.useMemo(() => {
+    const status = String(hostelAvailability?.status || '').toLowerCase();
+    if (!status) return null;
+
+    if (status === 'available') {
+      return {
+        label: 'Hostel Policy: Available',
+        className: 'bg-emerald-100 text-emerald-800 border-emerald-300'
+      };
+    }
+    if (status === 'none') {
+      return {
+        label: 'Hostel Policy: Not Available',
+        className: 'bg-slate-100 text-slate-700 border-slate-300'
+      };
+    }
+    if (status === 'limited') {
+      return {
+        label: 'Hostel Policy: Limited',
+        className: 'bg-amber-100 text-amber-800 border-amber-300'
+      };
+    }
+
+    return {
+      label: 'Hostel Policy: Unknown',
+      className: 'bg-violet-100 text-violet-800 border-violet-300'
+    };
+  }, [hostelAvailability]);
 
   const handleChartClick = (data) => {
     if (data && data.activeLabel) {
@@ -354,6 +433,11 @@ export function UniversityDetail() {
                   {overallRating}/5.0
                   <span className="text-sm font-normal text-white/80 ml-1">(AI Analyzed)</span>
                 </div>
+              )}
+              {hostelPolicyBadge && (
+                <Badge variant="outline" className={`text-sm ${hostelPolicyBadge.className}`}>
+                  {hostelPolicyBadge.label}
+                </Badge>
               )}
             </div>
           </div>
@@ -547,9 +631,21 @@ export function UniversityDetail() {
                         </div>
                         <p className="text-xs text-muted-foreground mb-4">💡 Click a bar to filter reviews by that category</p>
                         <ResponsiveContainer width="100%" height={320}>
-                          <BarChart data={sentimentData} onClick={handleChartClick}>
+                          <BarChart
+                            data={sentimentData}
+                            onClick={handleChartClick}
+                            margin={{ top: 8, right: 10, left: 0, bottom: 40 }}
+                          >
                             <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="category" angle={-45} textAnchor="end" height={80} />
+                            <XAxis
+                              dataKey="category"
+                              interval={0}
+                              angle={-35}
+                              textAnchor="end"
+                              height={95}
+                              tick={{ fontSize: 12 }}
+                              tickMargin={10}
+                            />
                             <YAxis domain={[0, 5]} />
                             <Tooltip formatter={(v) => `${v}/5.0`} />
                             <Bar
@@ -567,6 +663,11 @@ export function UniversityDetail() {
                             </Bar>
                           </BarChart>
                         </ResponsiveContainer>
+                        {unratedFactors.length > 0 && (
+                          <p className="text-xs text-muted-foreground mt-2">
+                            Unrated factors (insufficient review signal): {unratedFactors.join(", ")}
+                          </p>
+                        )}
                       </div>
 
                       {/* Rating Distribution */}
@@ -864,7 +965,69 @@ export function UniversityDetail() {
                     <CardTitle>Hostel & Housing</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-muted-foreground text-center py-8">No housing information available yet.</p>
+                    {hostelsLoading ? (
+                      <p className="text-muted-foreground text-center py-8">Loading nearby hostels...</p>
+                    ) : hostelsError ? (
+                      <p className="text-destructive text-center py-8">{hostelsError}</p>
+                    ) : hostels.length === 0 ? (
+                      <p className="text-muted-foreground text-center py-8">No nearby hostels found for this university.</p>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="h-72 rounded-lg overflow-hidden border">
+                          {!googleMapsApiKey ? (
+                            <div className="w-full h-full bg-muted flex items-center justify-center p-6 text-center text-muted-foreground">
+                              Set `VITE_GOOGLE_MAPS_API_KEY` in frontend env to display map markers.
+                            </div>
+                          ) : (
+                            <LoadScript googleMapsApiKey={googleMapsApiKey}>
+                              <GoogleMap mapContainerStyle={mapContainerStyle} center={hostelMapCenter} zoom={13}>
+                                <MarkerF position={hostelMapCenter} label="U" />
+                                {hostels.map((hostel) => (
+                                  hostel?.location?.lat && hostel?.location?.lng ? (
+                                    <MarkerF
+                                      key={hostel.id}
+                                      position={{ lat: hostel.location.lat, lng: hostel.location.lng }}
+                                      title={hostel.name}
+                                    />
+                                  ) : null
+                                ))}
+                              </GoogleMap>
+                            </LoadScript>
+                          )}
+                        </div>
+
+                        <div className="space-y-3 max-h-80 overflow-auto pr-1">
+                          {hostels.map((hostel) => (
+                            <div key={hostel.id} className="p-4 border rounded-lg">
+                              <div className="flex items-start justify-between gap-3">
+                                <div>
+                                  <h4 className="font-semibold">{hostel.name}</h4>
+                                  <p className="text-sm text-muted-foreground">{hostel.address}</p>
+                                </div>
+                                {typeof hostel.rating === 'number' && (
+                                  <Badge variant="outline">{hostel.rating.toFixed(1)} ⭐</Badge>
+                                )}
+                              </div>
+                              <div className="mt-3 flex items-center justify-between">
+                                <div className="text-sm text-muted-foreground">
+                                  {hostel.distanceKm != null ? `${hostel.distanceKm} km from university` : 'Distance unavailable'}
+                                </div>
+                                <Button size="sm" variant="outline" asChild>
+                                  <a
+                                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${hostel.name} ${hostel.address || ''}`.trim())}`}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                  >
+                                    <Navigation className="w-4 h-4 mr-2" />
+                                    Open in Maps
+                                  </a>
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </TabsContent>

@@ -12,7 +12,7 @@ export function AppRoutes() {
       ))}
 
       {protectedRoutes.map(route => (
-        <Route key={route.path} path={route.path} element={<ProtectedRoute>{route.element}</ProtectedRoute>} />
+        <Route key={route.path} path={route.path} element={<ProtectedRoute requiredRole={route.requiredRole}>{route.element}</ProtectedRoute>} />
       ))}
 
       <Route path="*" element={<Navigate to="/" replace />} />
