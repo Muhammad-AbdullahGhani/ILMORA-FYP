@@ -27,6 +27,7 @@ export function AuthProvider({ children }) {
       authStorage.saveToken(response.token);
       authStorage.saveUser(response.user);
       setUser(response.user);
+      return response.user;
     } catch (error) {
       // Re-throw the original error to be caught by AuthPage
       throw error;
@@ -45,6 +46,7 @@ export function AuthProvider({ children }) {
       authStorage.saveToken(response.token);
       authStorage.saveUser(response.user);
       setUser(response.user);
+      return response.user;
     } catch (error) {
       // Re-throw the original error to be caught by AuthPage
       throw error;

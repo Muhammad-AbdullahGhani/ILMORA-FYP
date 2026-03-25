@@ -101,10 +101,11 @@ export function AuthPage() {
 
     try {
       if (type === 'login') {
-        await auth.login({ 
+        const user = await auth.login({ 
           email: loginEmail, 
           password: loginPassword 
         });
+        navigate(user?.role === "admin" ? "/admin" : "/dashboard");
       } else {
         if (regPassword !== regConfirm) {
           throw new Error('Passwords do not match');
@@ -115,8 +116,8 @@ export function AuthPage() {
           password: regPassword,
           name: regName
         });
+        navigate('/dashboard');
       }
-      navigate('/dashboard');
     } catch (err) {
       console.error("Auth Error:", err);
       setError(err.message || 'Authentication failed');
