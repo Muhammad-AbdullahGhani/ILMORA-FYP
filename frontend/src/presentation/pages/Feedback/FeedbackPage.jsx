@@ -3,13 +3,19 @@ import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Button } from "./../../../shared/components/ui/button";
 import { Textarea } from "./../../../shared/components/ui/textarea";
+import { useAuth } from "@/app/providers/AuthProvider";
+import { axiosClient } from "@/shared/utils/axiosClient";
 import { MessageSquare, Star, CheckCircle2, ArrowLeft } from "lucide-react";
 export function FeedbackPage() {
+  const { user } = useAuth();
   const [ratings, setRatings] = useState({
     ux: 0,
     accuracy: 0,
     overall: 0
   });
+  const [comments, setComments] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const RatingStars = ({ category, value }) => {
     return (
@@ -34,10 +40,30 @@ export function FeedbackPage() {
       </div>
     );
   };
-  const handleSubmit = e => {
+  const handleSubmit = async e => {
     e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => setSubmitted(false), 3000);
+    setError("");
+    if (!ratings.overall) {
+      setError("Please select an overall rating.");
+      return;
+    }
+    try {
+      setSubmitting(true);
+      await axiosClient.post("/contact/feedback", {
+        ratings,
+        comments,
+        userName: user?.name || "Anonymous",
+        userEmail: user?.email || user?.username || "N/A"
+      });
+      setSubmitted(true);
+      setComments("");
+      setRatings({ ux: 0, accuracy: 0, overall: 0 });
+      setTimeout(() => setSubmitted(false), 3000);
+    } catch (err) {
+      setError(err.response?.data?.error || "Failed to submit feedback.");
+    } finally {
+      setSubmitting(false);
+    }
   };
   return (
     <div className="min-h-screen bg-muted/30 p-2 sm:p-4 md:p-8">
@@ -79,10 +105,20 @@ export function FeedbackPage() {
 
                 <div className="space-y-2">
                   <label className="font-medium">Additional Comments</label>
-                  <Textarea placeholder="Share your suggestions, what you liked, or what we can improve..." rows={6} className="resize-none" />
+                  <Textarea
+                    value={comments}
+                    onChange={(e) => setComments(e.target.value)}
+                    placeholder="Share your suggestions, what you liked, or what we can improve..."
+                    rows={6}
+                    className="resize-none"
+                  />
                 </div>
 
-                <Button type="submit" size="lg" className="w-full bg-primary hover:bg-primary/90">Submit Feedback</Button>
+                {error && <p className="text-sm text-destructive">{error}</p>}
+
+                <Button type="submit" size="lg" disabled={submitting} className="w-full bg-primary hover:bg-primary/90">
+                  {submitting ? "Submitting..." : "Submit Feedback"}
+                </Button>
               </form>
             </CardContent>
           </Card>

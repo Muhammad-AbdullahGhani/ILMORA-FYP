@@ -76,9 +76,9 @@ pip install -r requirements.txt
 cd ../recommendation-service
 pip install -r requirements.txt
 
-# Sentiment Service (Python - FastAPI)
+# Sentiment Service (Node.js)
 cd ../sentiment-service
-pip install -r requirements.txt
+npm install
 
 # Go back to backend root
 cd ../../..
@@ -106,6 +106,9 @@ SENTIMENT_SERVICE_URL=http://localhost:3004
 UNIVERSITY_SERVICE_URL=http://localhost:3005
 CAREER_SERVICE_URL=http://localhost:3006
 ADMIN_SERVICE_URL=http://localhost:3007
+
+# Google Maps (Hostel Finder)
+GOOGLE_MAPS_API_KEY=your-google-maps-api-key
 ```
 
 **Other Services**: Check individual `.env` files for MongoDB connection strings and port configurations.
@@ -135,6 +138,7 @@ This will start:
 - Quiz Service (Port 3002)
 - Recommendation Service (Port 3003)
 - Sentiment Service (Port 3004)
+- Python Sentiment Helper (Port 5000)
 - University Service (Port 3005)
 - Career Service (Port 3006)
 - Admin Service (Port 3007)
@@ -165,7 +169,7 @@ ILM-ORA/
 │   │   ├── auth-service/      # Authentication (Port 3008)
 │   │   ├── quiz-service/      # Career Quiz (Port 3002) [Python]
 │   │   ├── recommendation-service/  # AI Recommendations (Port 3003) [Python]
-│   │   ├── sentiment-service/ # Review Analysis (Port 3004) [Python]
+│   │   ├── sentiment-service/ # Review Analysis API (Port 3004) [Node.js]
 │   │   ├── university-service/# University Data (Port 3005)
 │   │   ├── career-service/    # Career Info (Port 3006)
 │   │   └── admin-service/     # Admin Panel (Port 3007)
@@ -214,8 +218,17 @@ pip install -r requirements.txt
 
 **Solution**:
 1. Verify all backend services are running
-2. Check `frontend/vite.config.ts` proxy configuration
+2. Check `frontend/vite.config.js` proxy configuration
 3. Ensure CORS is properly configured in gateway
+
+### Hostel Finder Map Not Loading
+
+**Symptoms**: Hostels list appears but map is blank
+
+**Solution**:
+1. Add `GOOGLE_MAPS_API_KEY` to `backend/services/gateway/.env`
+2. Add `VITE_GOOGLE_MAPS_API_KEY` to `frontend/.env`
+3. Enable Maps JavaScript API, Places API, and Geocoding API in Google Cloud
 
 ## 📧 Email Configuration (Contact Form)
 
@@ -242,6 +255,12 @@ To enable the contact form email functionality:
 5. **Explore Universities** → Search and compare universities
 6. **Career Insights** → Research career paths with salary info
 7. **Find Scholarships** → Discover scholarship opportunities
+8. **Find Nearby Hostels** → Select a university and view hostels near campus on map
+
+## 📌 Current Scope Notes
+
+- User progress is currently tracked in frontend localStorage (`userProgressService`) and is not synced to backend yet.
+- Scholarship data can be phased: keep current source now, then plug in richer external/curated datasets later.
 
 ## 🛡️ Technology Stack
 
@@ -256,10 +275,11 @@ To enable the contact form email functionality:
 
 **Backend:**
 - Node.js + Express (Microservices)
-- Python + FastAPI (AI Services)
+- Python + FastAPI (Quiz + Recommendation AI services)
 - MongoDB (Database)
 - JWT Authentication
 - Nodemailer (Email)
+- Google Maps Platform (Hostel proximity search + map display)
 
 ## 📝 License
 

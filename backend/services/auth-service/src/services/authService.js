@@ -9,7 +9,13 @@ const inMemoryUsers = [
 {
   id: 1,
   username: 'test',
-  passwordHash: '$2a$10$Jyn1zuQLi26YJD3CCuDkB.myEUu5MPpQsEJ0M6tq7PrClKM3QqWDu'
+  passwordHash: '$2a$10$Jyn1zuQLi26YJD3CCuDkB.myEUu5MPpQsEJ0M6tq7PrClKM3QqWDu',
+  role: 'student'
+}, {
+  id: 2,
+  username: 'admin@ilmora.local',
+  passwordHash: '$2a$10$Jyn1zuQLi26YJD3CCuDkB.myEUu5MPpQsEJ0M6tq7PrClKM3QqWDu',
+  role: 'admin'
 }];
 export const authenticate = async (username, password) => {
   const _bcrypt = await import('bcryptjs');
@@ -28,7 +34,8 @@ export const authenticate = async (username, password) => {
         return {
           id: user._id.toString(),
           username: user.email,
-          name: user.name
+          name: user.name,
+          role: user.role || 'student'
         };
       }
       // If no user in Mongo, continue to check in-memory below
@@ -46,7 +53,8 @@ export const authenticate = async (username, password) => {
   return {
     id: user.id,
     username: user.username,
-    name: user.name
+    name: user.name,
+    role: user.role || 'student'
   };
 };
 export const register = async (email, password, name) => {
@@ -61,12 +69,14 @@ export const register = async (email, password, name) => {
     const created = await UserModel.create({
       email,
       name,
-      passwordHash
+      passwordHash,
+      role: 'student'
     });
     return {
       id: created._id.toString(),
       email: created.email,
-      name: created.name
+      name: created.name,
+      role: created.role || 'student'
     };
   }
 
@@ -75,12 +85,14 @@ export const register = async (email, password, name) => {
     id: Date.now(),
     username: email,
     passwordHash,
-    name
+    name,
+    role: 'student'
   };
   inMemoryUsers.push(newUser);
   return {
     id: newUser.id,
     username: newUser.username,
-    name: newUser.name
+    name: newUser.name,
+    role: newUser.role
   };
 };

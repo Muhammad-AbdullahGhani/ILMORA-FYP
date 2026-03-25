@@ -65,11 +65,11 @@ export function UniversityRecommendations() {
               location: uni.location || "Pakistan",
               country: "Pakistan",
               image: universityImage,
-              tuitionFee: "PKR 150,000/sem", // Placeholder
-              match: 85 + (index % 15), // Mock match score
+              tuitionFee: uni.tuitionFeeRange || "N/A",
               ranking: `#${index + 1} in Region`,
               accreditation: uni.affiliation || "HEC Recognized",
-              programsOffered: ["Computer Science", "Business", "Engineering"], // Placeholder
+              programsOffered: uni.programsSample?.length ? uni.programsSample : ["N/A"],
+              programCount: uni.programCount || 0,
               studentsCount: uni.totalStudents ? uni.totalStudents.toLocaleString() : "N/A"
             };
           });
@@ -223,9 +223,6 @@ export function UniversityRecommendations() {
                         <Heart className={`w-5 h-5 ${saved.includes(university.id) ? "fill-current" : ""}`} />
                       </Button>
                     </div>
-                    <div className="absolute top-4 left-4">
-                      <Badge className="bg-primary shadow-lg">{university.match}% Match</Badge>
-                    </div>
                   </div>
 
                   <CardContent className="flex-1 p-6">
@@ -288,7 +285,9 @@ export function UniversityRecommendations() {
                         </div>
 
                         <div className="mb-4">
-                          <div className="text-sm text-muted-foreground mb-2">Programs You're Interested In:</div>
+                          <div className="text-sm text-muted-foreground mb-2">
+                            Programs Offered {university.programCount > 0 ? `(${university.programCount})` : ""}
+                          </div>
                           <div className="flex flex-wrap gap-2">{university.programsOffered.map((program, index) => <Badge key={index} variant="outline" className="bg-card">{program}</Badge>)}</div>
                         </div>
                       </div>

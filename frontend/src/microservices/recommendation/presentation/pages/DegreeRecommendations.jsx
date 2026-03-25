@@ -51,9 +51,7 @@ export function DegreeRecommendations() {
     async function fetchDegrees() {
       // Safety Check: If no scores, redirect to quiz
       if (!scores || !scores.dimension_averages) {
-        // navigate("/quiz-intro"); // Uncomment to enforce flow
-        console.warn("No quiz scores found. Using fallback/empty state.");
-        setLoading(false);
+        navigate("/quiz-intro", { replace: true });
         return;
       }
 
